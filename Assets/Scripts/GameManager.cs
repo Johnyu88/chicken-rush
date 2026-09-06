@@ -9,12 +9,15 @@ namespace ChickenRush
     /// <summary>單一場景的遊戲資料中心；場景中只放一個，由 Inspector 明確注入其他元件。</summary>
     public class GameManager : MonoBehaviour
     {
-        public enum GameState { Playing, GameOver, Paused }
+        public enum GameState { Playing, GameOver, Paused, MainMenu }
         public enum RescueState { Available, Active, Used }
 
         [Header("計分設定")]
         [SerializeField, Min(1)] private int pointsPerNest = 100;
         [SerializeField, Min(1)] private int maxMultiplier = 5;
+        [Header("滿窩金幣獎勵")]
+        [SerializeField] private InventoryManager inventoryManager;
+        [SerializeField, Min(0)] private int coinsPerNest = 10;
         [Header("雞窩生成：由管理器產生第一窩及後續雞窩")]
         [SerializeField] private NestController nestPrefab;
         [SerializeField] private Transform nestSpawnPoint;
@@ -37,6 +40,8 @@ namespace ChickenRush
         private readonly HashSet<ChickenController> chickens = new HashSet<ChickenController>();
         public float RescueSecondsRemaining { get; private set; }
         private bool restarting;
+        [SerializeField] private bool waitForDifficulty;
+        public float NestMoveSpeed { get; private set; }
 
         public void RegisterChicken(ChickenController chicken) { chickens.Add(chicken); }
         public void UnregisterChicken(ChickenController chicken) { chickens.Remove(chicken); }
@@ -60,7 +65,11 @@ namespace ChickenRush
         public bool IsPlaying => State == GameState.Playing;
 
         // MVP 假設本元件獨占 Time.timeScale；正式整合其他系統時改由統一的暫停服務管理。
-        private void Awake() { Time.timeScale = 1f; }
+        private void Awake()
+        {
+            Time.timeScale = 1f;
+            if (waitForDifficulty) State = GameState.MainMenu;
+        }
         private void OnDestroy() { Time.timeScale = 1f; }
 
         private void Start()
@@ -72,7 +81,19 @@ namespace ChickenRush
                 EndGame();
                 return;
             }
+            if (!waitForDifficulty && ActiveNest == null) SpawnNextNest();
+        }
+
+        public bool StartGame(GameDifficultySettings settings)
+        {
+            if (State != GameState.MainMenu || ActiveNest != null) return false;
+            if (worldCamera == null) worldCamera = Camera.main;
+            if (nestPrefab == null || nestSpawnPoint == null || worldCamera == null || !worldCamera.orthographic)
+                return false;
+            NestMoveSpeed = settings.NestSpeed;
             SpawnNextNest();
+            SetState(GameState.Playing);
+            return true;
         }
 
         private void SpawnNextNest()
@@ -107,6 +128,8 @@ namespace ChickenRush
             while (!IsPlaying) yield return null;
             ActiveNest = null;
             int awarded = scoring.Settle();
+            if (awarded > 0 && inventoryManager != null && coinsPerNest > 0)
+                inventoryManager.AddCoins(coinsPerNest);
             SpawnNextNest();
             IsChangingNest = false;
             onScoreAwarded.Invoke(awarded);

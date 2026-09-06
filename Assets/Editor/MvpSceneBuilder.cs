@@ -20,6 +20,17 @@ public static class MvpSceneBuilder
         Directory.CreateDirectory("Assets/Scenes");
         Directory.CreateDirectory("Assets/Prefabs");
         Directory.CreateDirectory("Assets/TestArt");
+        Directory.CreateDirectory("Assets/Physics");
+        const string materialPath = "Assets/Physics/ChickenPhysicsMaterial.physicsMaterial2D";
+        var chickenMaterial = AssetDatabase.LoadAssetAtPath<PhysicsMaterial2D>(materialPath);
+        if (chickenMaterial == null)
+        {
+            chickenMaterial = new PhysicsMaterial2D("ChickenPhysicsMaterial");
+            AssetDatabase.CreateAsset(chickenMaterial, materialPath);
+        }
+        chickenMaterial.bounciness = 0.4f;
+        chickenMaterial.friction = 0.2f;
+        EditorUtility.SetDirty(chickenMaterial);
         var texture = new Texture2D(32, 32);
         var pixels = new Color[1024];
         for (int i = 0; i < pixels.Length; i++) pixels[i] = Color.white;
@@ -32,6 +43,7 @@ public static class MvpSceneBuilder
         importer.spritePixelsPerUnit = 32;
         importer.SaveAndReimport();
         var sprite = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/TestArt/Square.png");
+        BuildExampleItems(sprite);
         EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
         var cameraObject = new GameObject("Main Camera", typeof(Camera), typeof(AudioListener));
         cameraObject.tag = "MainCamera";
@@ -47,6 +59,9 @@ public static class MvpSceneBuilder
         chicken.transform.localScale = Vector3.one * 0.32f;
         chicken.GetComponent<CircleCollider2D>().radius = 0.5f;
         chicken.GetComponent<Rigidbody2D>().collisionDetectionMode = CollisionDetectionMode2D.Continuous;
+        chicken.GetComponent<Rigidbody2D>().sharedMaterial = chickenMaterial;
+        chicken.GetComponent<CircleCollider2D>().sharedMaterial = chickenMaterial;
+        chicken.AddComponent<ChickenAnger>();
         var chickenPrefab = PrefabUtility.SaveAsPrefabAsset(chicken, "Assets/Prefabs/Chicken.prefab").GetComponent<ChickenController>();
         Object.DestroyImmediate(chicken);
 
@@ -70,6 +85,11 @@ public static class MvpSceneBuilder
         var manager = new GameObject("GameManager", typeof(GameManager), typeof(AudioSource)).GetComponent<GameManager>();
         Set(manager, "nestPrefab", nestPrefab); Set(manager, "nestSpawnPoint", spawnPoint.transform);
         Set(manager, "worldCamera", camera);
+        var inventory = new GameObject("InventoryManager", typeof(InventoryManager)).GetComponent<InventoryManager>();
+        Set(manager, "inventoryManager", inventory);
+        var managerData = new SerializedObject(manager);
+        managerData.FindProperty("waitForDifficulty").boolValue = true;
+        managerData.ApplyModifiedPropertiesWithoutUndo();
         var audio = manager.GetComponent<AudioSource>(); audio.playOnAwake = false; audio.spatialBlend = 0;
         Set(manager, "successAudioSource", audio);
         // 測試用短提示音；正式美術／音效可替換此資產。
@@ -90,6 +110,14 @@ public static class MvpSceneBuilder
         var spawnerData = new SerializedObject(spawner);
         spawnerData.FindProperty("horizontalMargin").floatValue = 0.35f;
         spawnerData.ApplyModifiedPropertiesWithoutUndo();
+        var difficulty = new GameObject("GameDifficultyManager", typeof(GameDifficultyManager)).GetComponent<GameDifficultyManager>();
+        var menu = new GameObject("MainMenuCanvas", typeof(RectTransform), typeof(MainMenuCanvas)).GetComponent<MainMenuCanvas>();
+        Set(difficulty, "gameManager", manager);
+        Set(difficulty, "spawner", spawner);
+        Set(difficulty, "mainMenuCanvas", menu.gameObject);
+        Set(difficulty, "obstacleSprite", BuildObstacleSprite());
+        Set(menu, "difficultyManager", difficulty);
+        Set(menu, "inventoryManager", inventory);
         var ui = new GameObject("RescueUI", typeof(RescueMockUI)).GetComponent<RescueMockUI>();
         Set(ui, "gameManager", manager);
         new GameObject("MVP Test Controls", typeof(MvpTestControls));
@@ -107,6 +135,42 @@ public static class MvpSceneBuilder
         var serialized = new SerializedObject(target);
         serialized.FindProperty(field).objectReferenceValue = value;
         serialized.ApplyModifiedPropertiesWithoutUndo();
+    }
+    private static void BuildExampleItems(Sprite icon)
+    {
+        Directory.CreateDirectory("Assets/Resources/Items");
+        string[] ids = { "title.rookie", "costume.yellow_hat", "furniture.wooden_chair", "butler.apprentice" };
+        string[] names = { "接雞新手", "黃色小帽", "小木椅", "見習管家" };
+        int[] prices = { 50, 100, 200, 500 };
+        for (int i = 0; i < ids.Length; i++)
+        {
+            string path = "Assets/Resources/Items/" + ids[i] + ".asset";
+            if (AssetDatabase.LoadAssetAtPath<ItemDataSO>(path) != null) continue;
+            var item = ScriptableObject.CreateInstance<ItemDataSO>();
+            item.itemId = ids[i]; item.itemName = names[i]; item.itemType = (ItemType)i;
+            item.price = prices[i]; item.icon = icon;
+            AssetDatabase.CreateAsset(item, path);
+        }
+    }
+    private static Sprite BuildObstacleSprite()
+    {
+        var texture = new Texture2D(64, 64);
+        var pixels = new Color[64 * 64];
+        for (int y = 0; y < 64; y++)
+            for (int x = 0; x < 64; x++)
+                pixels[y * 64 + x] = new Vector2(x - 31.5f, y - 31.5f).sqrMagnitude <= 31f * 31f
+                    ? Color.white : Color.clear;
+        texture.SetPixels(pixels); texture.Apply();
+        const string path = "Assets/TestArt/ObstacleCircle.png";
+        File.WriteAllBytes(path, texture.EncodeToPNG());
+        Object.DestroyImmediate(texture);
+        AssetDatabase.ImportAsset(path);
+        var importer = (TextureImporter)AssetImporter.GetAtPath(path);
+        importer.textureType = TextureImporterType.Sprite;
+        importer.spritePixelsPerUnit = 64;
+        importer.alphaIsTransparency = true;
+        importer.SaveAndReimport();
+        return AssetDatabase.LoadAssetAtPath<Sprite>(path);
     }
     private static void Zone(string name, Vector2 position, Vector2 size)
     {

@@ -38,6 +38,15 @@ namespace ChickenRush
         private bool hasFocus = true;
         private bool applicationPaused;
         public float CurrentHorizontalSpeed => holdInput.HorizontalSpeed;
+        private PhysicsMaterial2D difficultyMaterial;
+        private bool waitForRelease;
+
+        public void ConfigureDifficulty(PhysicsMaterial2D material)
+        {
+            difficultyMaterial = material;
+            waitForRelease = true;
+            ResetInput();
+        }
 
         private void Start()
         {
@@ -59,6 +68,13 @@ namespace ChickenRush
             }
             Vector2 position;
             bool held = ReadPointer(out position);
+            // A menu click/touch must be released before it can spawn a chicken.
+            if (waitForRelease)
+            {
+                if (!held) waitForRelease = false;
+                ResetInput();
+                return;
+            }
             int count = holdInput.Step(held, position.x / Mathf.Max(1, Screen.width), Time.deltaTime,
                 Mathf.Clamp(chickensPerSecond, 0f, 100f), dragWidthFraction, maxHorizontalSpeed);
             // 保留小數額度：20 隻／秒而幀率只有 10 FPS 時，每幀可生成兩隻。
@@ -140,6 +156,12 @@ namespace ChickenRush
             position.z = gameplayZ;
             ChickenController chicken = Instantiate(chickenPrefab, position, Quaternion.identity);
             Rigidbody2D body = chicken.GetComponent<Rigidbody2D>();
+            if (difficultyMaterial != null)
+            {
+                body.sharedMaterial = difficultyMaterial;
+                foreach (var collider in chicken.GetComponents<Collider2D>())
+                    collider.sharedMaterial = difficultyMaterial;
+            }
             body.bodyType = RigidbodyType2D.Dynamic;
             body.simulated = true;
             body.gravityScale = Mathf.Max(0.01f, gravityScale);

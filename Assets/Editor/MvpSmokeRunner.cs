@@ -46,6 +46,8 @@ public static class MvpSmokeRunner
             {
                 case 0:
                     manager = UnityEngine.Object.FindFirstObjectByType<GameManager>();
+                    if (manager != null && manager.State == GameManager.GameState.MainMenu)
+                        UnityEngine.Object.FindFirstObjectByType<GameDifficultyManager>().SelectDifficulty(GameDifficulty.Relaxed);
                     if (manager == null || manager.ActiveNest == null) return;
                     prefab = AssetDatabase.LoadAssetAtPath<ChickenController>("Assets/Prefabs/Chicken.prefab");
                     // 真實掉落進入 Sensor，不直接呼叫收納函式。
@@ -77,8 +79,13 @@ public static class MvpSmokeRunner
                     manager.RestartGame(); Next(6); break;
                 case 6:
                     manager = UnityEngine.Object.FindFirstObjectByType<GameManager>();
-                    if (manager == null || manager.ActiveNest == null || !manager.IsPlaying) return;
+                    if (manager == null || manager.State != GameManager.GameState.MainMenu) return;
+                    Check(manager.ActiveNest == null && UnityEngine.Object.FindFirstObjectByType<MainMenuCanvas>() != null,
+                        "Restart did not return to menu");
                     Check(manager.Score == 0 && manager.Combo == 0 && manager.Rescue == GameManager.RescueState.Available, "Restart state incorrect");
+                    UnityEngine.Object.FindFirstObjectByType<GameDifficultyManager>().SelectDifficulty(GameDifficulty.Extreme);
+                    Check(manager.IsPlaying && manager.ActiveNest != null && manager.NestMoveSpeed == 4f,
+                        "Restart could not select a different difficulty");
                     Debug.Log("CHICKEN_RUSH_SMOKE_PASS: physical collection, scoring, death, 5s rescue, combo preservation, restart");
                     SessionState.SetBool("ChickenRushSmoke", false);
                     EditorApplication.update -= Tick;

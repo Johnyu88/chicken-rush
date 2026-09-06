@@ -19,11 +19,41 @@ namespace ChickenRush
         public int Capacity => Mathf.Max(1, capacity);
         public bool IsFull => CurrentCount >= Capacity;
         public bool IsLeaving { get; private set; }
+        private Vector3 movementOrigin;
+        private float movementDistance;
+        private float movementRange;
 
         public void Initialize(GameManager manager, Camera camera)
         {
             gameManager = manager;
             worldCamera = camera;
+            movementOrigin = transform.position;
+            movementDistance = 0f;
+            float halfWidth = 0f;
+            foreach (Renderer visual in GetComponentsInChildren<Renderer>())
+                halfWidth = Mathf.Max(halfWidth, visual.bounds.extents.x);
+            float viewportHalfWidth = camera.orthographicSize * camera.aspect;
+            float maximumHalfWidth = viewportHalfWidth * (manager.NestMoveSpeed > 0f ? 0.65f : 0.95f);
+            if (halfWidth > maximumHalfWidth && halfWidth > 0f)
+            {
+                var scale = transform.localScale;
+                scale.x *= maximumHalfWidth / halfWidth;
+                transform.localScale = scale;
+                halfWidth = maximumHalfWidth;
+            }
+            // Keep the full nest visible; cap the travel to two world units each side.
+            movementRange = Mathf.Min(2f, Mathf.Max(0f,
+                viewportHalfWidth - halfWidth - 0.15f -
+                Mathf.Abs(movementOrigin.x - camera.transform.position.x)));
+        }
+
+        private void FixedUpdate()
+        {
+            if (gameManager == null || !gameManager.IsPlaying || IsLeaving ||
+                gameManager.NestMoveSpeed <= 0f || movementRange <= 0f) return;
+            movementDistance += gameManager.NestMoveSpeed * Time.fixedDeltaTime;
+            float x = Mathf.PingPong(movementDistance + movementRange, 2f * movementRange) - movementRange;
+            transform.position = movementOrigin + Vector3.right * x;
         }
 
         /// <summary>小雞切換 Nested 狀態後才計數，多個 Collider／Stay 回呼不會重複接收。</summary>
