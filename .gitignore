@@ -1,0 +1,66 @@
+# Unity generated caches (keep Assets, Packages, ProjectSettings and asset .meta files).
+# Reference: https://github.com/github/gitignore/blob/main/Unity.gitignore
+/[Ll]ibrary/
+/[Tt]emp/
+/[Oo]bj/
+/[Ll]ogs/
+/[Uu]ser[Ss]ettings/
+/[Bb]uild/
+/[Bb]uilds/
+/[Mm]emoryCaptures/
+/[Rr]ecordings/
+/.utmp/
+
+# IDE and generated solution files
+.vs/
+.idea/
+.gradle/
+ExportedObj/
+*.csproj
+*.unityproj
+*.sln
+*.slnx
+*.suo
+*.user
+*.userprefs
+*.DotSettings.user
+*.pidb
+*.pdb
+*.mdb
+*.opendb
+*.VC.db
+*.pidb.meta
+*.pdb.meta
+*.mdb.meta
+
+# Logs, crash reports and local build outputs
+*.log
+*.tmp
+sysinfo.txt
+mono_crash.*
+*.apk
+*.aab
+*.app
+*.unitypackage
+*.unitypackage.meta
+*.blend1
+*.blend1.meta
+crashlytics-build.properties
+
+# Unity generated assets
+/Assets/Plugins/Editor/JetBrains*
+/Assets/Addressables_Temp*
+/Assets/StreamingAssets/aa*
+/Assets/AddressableAssetsData/link.xml*
+/Assets/InitTestScene*.unity*
+/Assets/SceneDependencyCache*
+/UIElementsSchema/
+
+# Machine-local files (never ignore all .meta files or all DLL assets).
+.DS_Store
+Thumbs.db
+Desktop.ini
+.env
+.env.*
+!.env.example
+/.codex/
