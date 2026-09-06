@@ -26,13 +26,7 @@ namespace ChickenRush
             body.AddForce(initialImpulse, ForceMode2D.Impulse);
         }
 
-        private void OnTriggerEnter2D(Collider2D other)
-        {
-            if (!CanEnterNest) return;
-            // Trigger 可以位於雞窩子物件；向父層尋找控制器。
-            NestController nest = other.GetComponentInParent<NestController>();
-            if (nest != null) nest.TryAcceptChicken(this);
-        }
+        // 進窩由 NestSensor 統一偵測，避免碰到雞窩其他 Trigger 就誤算收納。
 
         /// <summary>雞窩先確認有容量後才可呼叫；狀態鎖防止多 Collider 重複計數。</summary>
         public bool TryEnterNest(Transform nest)

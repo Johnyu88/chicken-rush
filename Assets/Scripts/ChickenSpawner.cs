@@ -52,7 +52,7 @@ namespace ChickenRush
 
         private void Update()
         {
-            if (!hasFocus || applicationPaused || gameManager == null || !gameManager.IsPlaying)
+            if (!hasFocus || applicationPaused || gameManager == null || !gameManager.IsPlaying || gameManager.IsChangingNest)
             {
                 ResetInput();
                 return;
@@ -132,7 +132,7 @@ namespace ChickenRush
         /// </summary>
         public void SpawnChicken()
         {
-            if (gameManager == null || !gameManager.IsPlaying || worldCamera == null || chickenPrefab == null) return;
+            if (gameManager == null || !gameManager.IsPlaying || gameManager.IsChangingNest || worldCamera == null || chickenPrefab == null) return;
             float margin = Mathf.Clamp(horizontalMargin, 0f, 0.49f);
             Vector3 position = worldCamera.ViewportToWorldPoint(new Vector3(Random.Range(margin, 1f - margin),
                 1f, gameplayZ - worldCamera.transform.position.z));

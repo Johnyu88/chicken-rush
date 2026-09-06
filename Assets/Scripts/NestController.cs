@@ -1,62 +1,73 @@
+using System.Collections;
 using UnityEngine;
 using UnityEngine.Events;
 
 namespace ChickenRush
 {
-    /// <summary>接收小雞、封鎖已滿雞窩、滑出後生成下一個；事件只連接 UI／音效等表現。</summary>
+    /// <summary>雞窩只管理收納與退場；生命週期及得分由 GameManager 接手。</summary>
     public class NestController : MonoBehaviour
     {
-        [SerializeField] private GameManager gameManager;
-        [SerializeField, Min(1)] private int capacity = 3;
-        [Header("切換設定")]
-        [Tooltip("拖入 Project 中的雞窩 Prefab，可引用自己以形成相同雞窩的循環。")]
-        [SerializeField] private NestController nextNestPrefab;
-        [SerializeField, Min(0.01f)] private float slideSpeed = 5f;
-        [Tooltip("世界座標；應設在鏡頭左界之外，並預留整個雞窩的寬度。")]
-        [SerializeField] private float exitX = -12f;
-        [Header("Inspector 事件")]
+        [SerializeField, Min(1)] private int capacity = 10;
+        [SerializeField, Min(0.05f)] private float slideDuration = 0.7f;
+        [Tooltip("完全離開鏡頭左側後再多滑出的世界距離。")]
+        [SerializeField, Min(0f)] private float exitPadding = 0.5f;
         [SerializeField] private UnityEvent onChickenAccepted = new UnityEvent();
         [SerializeField] private UnityEvent onFilled = new UnityEvent();
-        [Tooltip("可連接場景上 AudioSource.Play，避免音源隨雞窩銷毀而中斷。")]
-        [SerializeField] private UnityEvent onPlayFilledSound = new UnityEvent();
-        private Vector3 initialPosition;
-        private bool isLeaving;
+        private GameManager gameManager;
+        private Camera worldCamera;
         public int CurrentCount { get; private set; }
         public int Capacity => Mathf.Max(1, capacity);
         public bool IsFull => CurrentCount >= Capacity;
+        public bool IsLeaving { get; private set; }
 
-        private void Awake() { initialPosition = transform.position; }
+        public void Initialize(GameManager manager, Camera camera)
+        {
+            gameManager = manager;
+            worldCamera = camera;
+        }
 
-        /// <summary>原子式接收：先確認雙方狀態，再鎖定小雞、增加數量，最後發布事件。</summary>
+        /// <summary>小雞切換 Nested 狀態後才計數，多個 Collider／Stay 回呼不會重複接收。</summary>
         public bool TryAcceptChicken(ChickenController chicken)
         {
-            if (gameManager == null || !gameManager.IsPlaying || isLeaving || IsFull || chicken == null) return false;
+            if (!isActiveAndEnabled || gameManager == null || !gameManager.IsPlaying ||
+                gameManager.ActiveNest != this || IsLeaving || IsFull || chicken == null) return false;
             if (!chicken.TryEnterNest(transform)) return false;
             CurrentCount++;
-            bool completedNow = IsFull;
-            if (completedNow) isLeaving = true; // 在任何事件之前上鎖，防止重入重複得分。
-            if (completedNow) gameManager.RegisterNestCompleted();
-            onChickenAccepted.Invoke();
-            if (completedNow)
+            if (IsFull)
             {
-                onFilled.Invoke();
-                onPlayFilledSound.Invoke();
+                IsLeaving = true; // 先上鎖再派發事件，防止同一物理幀超收或重複完成。
+                gameManager.BeginNestCompletion(this);
             }
+            onChickenAccepted.Invoke();
+            if (IsFull) onFilled.Invoke();
             return true;
         }
 
-        private void Update()
+        /// <summary>由管理器執行 Coroutine。計入已收納小雞的顯示範圍，確保整窩離開鏡頭。</summary>
+        public IEnumerator SlideOut()
         {
-            if (!isLeaving || gameManager == null || !gameManager.IsPlaying) return;
-            transform.position += Vector3.left * (Mathf.Max(0.01f, slideSpeed) * Time.deltaTime);
-            if (transform.position.x > exitX) return;
-            if (nextNestPrefab != null)
+            Vector3 start = transform.position;
+            float rightEdge = start.x;
+            foreach (Renderer visual in GetComponentsInChildren<Renderer>())
+                rightEdge = Mathf.Max(rightEdge, visual.bounds.max.x);
+            foreach (Collider2D collider in GetComponentsInChildren<Collider2D>())
+                rightEdge = Mathf.Max(rightEdge, collider.bounds.max.x);
+            float leftEdge = worldCamera.ViewportToWorldPoint(new Vector3(0f, 0.5f,
+                start.z - worldCamera.transform.position.z)).x;
+            float endX = Mathf.Min(start.x, leftEdge - (rightEdge - start.x) - Mathf.Max(0f, exitPadding));
+            Vector3 end = new Vector3(endX, start.y, start.z);
+            float elapsed = 0f;
+            float duration = Mathf.Max(0.05f, slideDuration);
+            while (elapsed < duration)
             {
-                NestController next = Instantiate(nextNestPrefab, initialPosition, transform.rotation);
-                next.gameManager = gameManager; // Prefab 不應持有場景物件引用，由舊雞窩注入。
+                yield return null;
+                if (this == null || gameManager == null) yield break;
+                if (!gameManager.IsPlaying) continue;
+                elapsed += Time.deltaTime;
+                float t = Mathf.Clamp01(elapsed / duration);
+                transform.position = Vector3.Lerp(start, end, t * t * (3f - 2f * t));
             }
-            else Debug.LogWarning("未指定下一個雞窩 Prefab；切換流程在此停止。", this);
-            Destroy(gameObject); // 同時清理已收納的小雞子物件。
+            transform.position = end;
         }
     }
 }
