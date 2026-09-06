@@ -22,7 +22,7 @@ Spawner 預設每秒 5 隻，按下立即生成第一隻；拖動四分之一螢
 
 障礙物的非 Trigger Collider2D 所在 Layer 加入小雞 knockAwayLayers。設定小雞 despawnBelowY 到畫面底部外。GameManager 的 Pause／Resume 可接 UI；EndGame 由未來生命或時間規則呼叫。
 
-救援保留 RequestRescue → 外部清理 → CompleteRescue 的一次性接口；尚無廣告 SDK、重開流程、物件池或 UI 點擊排除。
+失敗與救援現已實作，詳見 [RESCUE_SETUP.md](RESCUE_SETUP.md)：DeathZone 觸發 GameOver；RescueMockUI 顯示 5 秒 Mock 廣告與重來按鈕，GameManager 負責清場並保留 Combo、或重新載入場景。每局一次救援，沒有真實廣告 SDK、物件池或正式 Canvas UI。
 
 ## 測試與版本控制
 

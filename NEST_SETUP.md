@@ -1,5 +1,7 @@
 # 雞窩收納、計分與 Inspector 設定
 
+更新：失敗／救援規則已由 [RESCUE_SETUP.md](RESCUE_SETUP.md) 取代本文件早期的漏接斷 Combo 描述。現在越界會暫停並顯示救援，撞飛不立即斷 Combo，救援保留 Combo；换窩期間越界也會失敗。以下雞窩 Prefab 與計分接線仍適用。
+
 ## 執行順序
 
 1. GameManager 依 Nest Prefab 與 Nest Spawn Point 自動生成第一窩。

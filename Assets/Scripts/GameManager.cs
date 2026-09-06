@@ -1,6 +1,8 @@
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
+using UnityEngine.SceneManagement;
 
 namespace ChickenRush
 {
@@ -30,6 +32,23 @@ namespace ChickenRush
         [Header("事件：UI 可讀取下方唯讀屬性更新畫面")]
         [SerializeField] private UnityEvent onDataChanged = new UnityEvent();
         [SerializeField] private UnityEvent onRescueRequested = new UnityEvent();
+        [SerializeField] private UnityEvent onFailure = new UnityEvent();
+        [SerializeField] private UnityEvent onRescueCompleted = new UnityEvent();
+        private readonly HashSet<ChickenController> chickens = new HashSet<ChickenController>();
+        public float RescueSecondsRemaining { get; private set; }
+        private bool restarting;
+
+        public void RegisterChicken(ChickenController chicken) { chickens.Add(chicken); }
+        public void UnregisterChicken(ChickenController chicken) { chickens.Remove(chicken); }
+
+        /// <summary>死區與底部保底偵測共用入口；同幀多隻死亡只觸發一次，保留失敗前 Combo。</summary>
+        public void ReportChickenLost(ChickenController chicken)
+        {
+            if (!IsPlaying || chicken == null || !chickens.Contains(chicken) ||
+                chicken.State == ChickenController.ChickenState.Nested) return;
+            EndGame();
+            onFailure.Invoke();
+        }
 
         public GameState State { get; private set; } = GameState.Playing;
         public RescueState Rescue { get; private set; } = RescueState.Available;
@@ -114,23 +133,52 @@ namespace ChickenRush
             onDataChanged.Invoke();
         }
 
-        /// <summary>預留一次救援流程：GameOver → Active → Used。事件接救援 UI 或復活動畫。</summary>
+        /// <summary>每局一次 Mock 廣告救援；倒數由管理器持有，UI 關閉不會取消流程。</summary>
         public void RequestRescue()
         {
             if (State != GameState.GameOver || Rescue != RescueState.Available) return;
             Rescue = RescueState.Active;
+            RescueSecondsRemaining = 5f;
+            StartCoroutine(WatchMockAd());
             onDataChanged.Invoke();
             onRescueRequested.Invoke();
         }
 
-        /// <summary>外部先清理危險物件／重設場景位置，再回報救援是否成功；取消仍消耗救援。</summary>
-        public void CompleteRescue(bool success)
+        private IEnumerator WatchMockAd()
         {
-            if (Rescue != RescueState.Active) return;
+            // timeScale 為 0 仍會逐幀執行，unscaledDeltaTime 不受暫停影響。
+            while (RescueSecondsRemaining > 0f)
+            {
+                yield return null;
+                RescueSecondsRemaining = Mathf.Max(0f, RescueSecondsRemaining - Time.unscaledDeltaTime);
+            }
+            // 母雞掃場 Mock：只清未收納的小雞，保留當前雞窩內容與未入帳獎勵。
+            foreach (ChickenController chicken in new List<ChickenController>(chickens))
+            {
+                if (chicken == null || chicken.State == ChickenController.ChickenState.Nested) continue;
+                chicken.gameObject.SetActive(false); // Destroy 前先停用，恢復物理時不再觸發死亡。
+                Destroy(chicken.gameObject);
+            }
+            yield return null; // 等待幀末銷毀完成再恢復。
             Rescue = RescueState.Used;
-            scoring.Miss();
-            onComboChanged.Invoke(Combo);
-            SetState(success ? GameState.Playing : GameState.GameOver);
+            SetState(GameState.Playing); // 不呼叫 scoring.Miss，保留 Score、Combo 與待結算獎勵。
+            onRescueCompleted.Invoke();
+        }
+
+        /// <summary>重新載入目前場景，重建分數、Combo、救援額度、雞窩與生成器。</summary>
+        public void RestartGame()
+        {
+            if (restarting || Rescue == RescueState.Active) return;
+            Scene scene = SceneManager.GetActiveScene();
+            if (scene.buildIndex < 0)
+            {
+                Debug.LogError("請先儲存場景並加入 Build Settings／Build Profiles 的場景清單。", this);
+                return;
+            }
+            restarting = true;
+            StopAllCoroutines();
+            Time.timeScale = 1f;
+            SceneManager.LoadScene(scene.buildIndex);
         }
     }
 }

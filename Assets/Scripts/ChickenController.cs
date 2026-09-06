@@ -10,7 +10,6 @@ namespace ChickenRush
         [Tooltip("只有這些圖層的實體碰撞才算撞飛；雞窩收納使用 Trigger。")]
         [SerializeField] private LayerMask knockAwayLayers;
         [SerializeField, Min(0f)] private float knockAwayImpulse = 4f;
-        [SerializeField, Min(0.1f)] private float knockedAwayLifetime = 3f;
         [SerializeField] private float despawnBelowY = -10f;
         private Rigidbody2D body;
         private GameManager gameManager;
@@ -23,6 +22,7 @@ namespace ChickenRush
         public void Initialize(GameManager manager, Vector2 initialImpulse)
         {
             gameManager = manager;
+            gameManager.RegisterChicken(this);
             body.AddForce(initialImpulse, ForceMode2D.Impulse);
         }
 
@@ -50,16 +50,25 @@ namespace ChickenRush
             if (!CanEnterNest) return;
             State = ChickenState.KnockedAway;
             body.AddForce(direction.normalized * knockAwayImpulse, ForceMode2D.Impulse);
-            gameManager.RegisterMiss();
-            Destroy(gameObject, knockedAwayLifetime); // 使用遊戲時間；暫停時不倒數。
+            // 撞飛先保留 Combo；實際進死區才失敗，救援可保留失敗前的連擊。
+            // 不再提前銷毀，以免越界小雞在碰到死區前就消失。
         }
 
         private void Update()
         {
             if (gameManager == null || !gameManager.IsPlaying || State == ChickenState.Nested) return;
             if (transform.position.y >= despawnBelowY) return;
-            if (State == ChickenState.Falling) gameManager.RegisterMiss();
-            Destroy(gameObject); // 撞飛的小雞不再重複回報失誤。
+            ReportLost(); // 即使死區漏放，底部界線也會觸發相同失敗流程。
+        }
+
+        public void ReportLost()
+        {
+            if (gameManager != null) gameManager.ReportChickenLost(this);
+        }
+
+        private void OnDestroy()
+        {
+            if (gameManager != null) gameManager.UnregisterChicken(this);
         }
     }
 }
