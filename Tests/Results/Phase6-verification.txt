@@ -1,0 +1,11 @@
+Phase 6-1 verification
+Environment: Unity 6000.3.23f1, isolated project using built-in modules and uGUI 2.0.0. Original project package manifest/version unchanged.
+Baseline: Phase6ContractCheck failed as expected before implementation: AudioManager is missing.
+Final run:
+- PHASE6_CONTRACT_PASS
+- PHASE6_SMOKE_PASS: independent SFX pitches 1.0/1.05/1.1, pitch cap, independent BGM, real 2D collision, anger aura lifecycle, duplicate acceptance/full-nest protection, feather emission/cleanup, score, rescue, camera restoration, scene reload with one manager of each kind.
+- CHICKEN_RUSH_PHASE4_PASS: purchase, equip, validation, overflow, menu currency, settlement reward, scene reload.
+- PHASE5_SMOKE_PASS: shop tabs, purchase/equip, currency events and save compatibility.
+- Phase6Effects.png inspected: feather and distinct orange spark textures render correctly, no missing-material pink.
+Known environment output: UnityEditor.Search.SearchDatabase indexing exception on Play Mode startup (also present in prior phases); all test assertions passed and processes exited with code 0. No game-script exception.
+Audio verification covers playback configuration and independent voices, not subjective listening or device loudness.

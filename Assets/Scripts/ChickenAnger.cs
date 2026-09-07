@@ -13,6 +13,7 @@ namespace ChickenRush
         private readonly List<ContactPoint2D> contacts = new List<ContactPoint2D>();
         private PhysicsMaterial2D angryMaterial;
         private float squeezedTime;
+        private ParticleSystem aura;
 
         private void Awake()
         {
@@ -54,9 +55,22 @@ namespace ChickenRush
             body.sharedMaterial = angryMaterial;
             foreach (var collider in colliders) collider.sharedMaterial = angryMaterial;
             body.WakeUp();
+            if (AudioManager.Instance != null) AudioManager.Instance.PlayAngry();
+            if (EffectManager.Instance != null) aura = EffectManager.Instance.AttachAnger(transform);
         }
 
-        private void OnDisable() { squeezedTime = 0f; }
+        public void StopFeedback()
+        {
+            if (aura == null) return;
+            aura.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+            aura.gameObject.SetActive(false); Destroy(aura.gameObject); aura = null;
+        }
+        private void OnEnable()
+        {
+            if (isAngry && body != null && body.simulated && EffectManager.Instance != null)
+                aura = EffectManager.Instance.AttachAnger(transform);
+        }
+        private void OnDisable() { squeezedTime = 0f; StopFeedback(); }
         private void OnDestroy()
         {
             if (angryMaterial != null) Destroy(angryMaterial);

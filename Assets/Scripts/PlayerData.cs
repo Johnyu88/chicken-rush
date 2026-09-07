@@ -7,6 +7,7 @@ namespace ChickenRush
     public sealed class PlayerData
     {
         public int coins;
+        public int feathers;
         public List<string> ownedItemIds = new List<string>();
         public string equippedTitleId = "";
         public string equippedCostumeId = "";
@@ -17,6 +18,7 @@ namespace ChickenRush
         public void Normalize()
         {
             coins = Math.Max(0, coins);
+            feathers = Math.Max(0, feathers);
             if (ownedItemIds == null) ownedItemIds = new List<string>();
             var seen = new HashSet<string>(StringComparer.Ordinal);
             ownedItemIds.RemoveAll(id => string.IsNullOrWhiteSpace(id) || id != id.Trim() || !seen.Add(id));
@@ -54,7 +56,7 @@ namespace ChickenRush
 
         public PlayerData Copy() => new PlayerData
         {
-            coins = coins, ownedItemIds = new List<string>(ownedItemIds),
+            coins = coins, feathers = feathers, ownedItemIds = new List<string>(ownedItemIds),
             equippedTitleId = equippedTitleId, equippedCostumeId = equippedCostumeId,
             equippedFurnitureId = equippedFurnitureId, equippedButlerId = equippedButlerId
         };

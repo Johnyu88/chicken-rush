@@ -1,0 +1,8 @@
+Phase 5 verification
+- Unity 6000.3.23f1; isolated copy; built-in modules and uGUI 2.0.0.
+- Phase5SmokeRunner.Run: PHASE5_SMOKE_PASS.
+- Screenshot: Phase5Shop.png, 720 x 960; inspected for layout overlap.
+- An editor SearchDatabase indexing exception occurred during first startup; no game-script exception was reported.
+- Full original package graph is incompatible with declared Unity 6000.3.23f1. A Unity 6000.6 trial stalled at Burst IL postprocessing. Original project packages/version were preserved.
+- Phase4SmokeRunner.Run: CHICKEN_RUSH_PHASE4_PASS (purchase, equip, validation, overflow, menu, settlement, scene reload).
+- Phase4SmokeRunner.VerifySaved: CHICKEN_RUSH_PHASE4_PERSISTENCE_PASS (process restart, four slots, free items, backup, normalization, snapshots).

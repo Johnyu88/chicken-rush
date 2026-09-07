@@ -63,6 +63,8 @@ namespace ChickenRush
                 gameManager.ActiveNest != this || IsLeaving || IsFull || chicken == null) return false;
             if (!chicken.TryEnterNest(transform)) return false;
             CurrentCount++;
+            if (AudioManager.Instance != null) AudioManager.Instance.PlayCombo(gameManager.Combo);
+            if (EffectManager.Instance != null) EffectManager.Instance.PlayFeathers(chicken.transform.position);
             if (IsFull)
             {
                 IsLeaving = true; // 先上鎖再派發事件，防止同一物理幀超收或重複完成。

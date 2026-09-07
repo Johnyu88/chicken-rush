@@ -12,6 +12,9 @@ namespace ChickenRush
         [SerializeField] private string playerPrefsKey = "ChickenRush.PlayerData.v1";
         private PlayerData data;
         public event Action Changed;
+        public event Action OnCurrencyChanged;
+        public int Feathers { get { EnsureLoaded(); return data.feathers; } }
+        public bool OwnsItem(ItemDataSO item) { EnsureLoaded(); return item != null && data.ownedItemIds.Contains(item.itemId); }
         public int Coins { get { EnsureLoaded(); return data.coins; } }
         public IReadOnlyList<string> OwnedItemIds { get { EnsureLoaded(); return data.ownedItemIds.AsReadOnly(); } }
         public PlayerData GetSnapshot() { EnsureLoaded(); return data.Copy(); }
@@ -48,6 +51,14 @@ namespace ChickenRush
             EnsureLoaded();
             if (amount <= 0 || amount > int.MaxValue - data.coins) return false;
             var next = data.Copy(); next.coins += amount;
+            return Commit(next);
+        }
+
+        public bool AddFeathers(int amount)
+        {
+            EnsureLoaded();
+            if (amount <= 0 || amount > int.MaxValue - data.feathers) return false;
+            var next = data.Copy(); next.feathers += amount;
             return Commit(next);
         }
 
@@ -88,7 +99,9 @@ namespace ChickenRush
                 Debug.LogError("玩家存檔失敗：" + ex.Message, this);
                 return false;
             }
+            bool currencyChanged = data.coins != next.coins || data.feathers != next.feathers;
             data = next;
+            if (currencyChanged) OnCurrencyChanged?.Invoke();
             Changed?.Invoke();
             return true;
         }

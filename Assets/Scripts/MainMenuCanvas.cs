@@ -15,6 +15,8 @@ namespace ChickenRush
         private Font runtimeFont;
         [SerializeField] private InventoryManager inventoryManager;
         private Text coinsLabel;
+        private Text feathersLabel;
+        private ShopCanvas shop;
 
         private void Awake()
         {
@@ -46,6 +48,11 @@ namespace ChickenRush
             coinRect.anchoredPosition = new Vector2(-24, -24);
             coinsLabel.alignment = TextAnchor.MiddleRight;
             RefreshCoins();
+            feathersLabel = Label("FeathersLabel", transform, "", 28, Vector2.zero, new Vector2(300, 56), Color.white);
+            feathersLabel.rectTransform.anchorMin = feathersLabel.rectTransform.anchorMax = feathersLabel.rectTransform.pivot = new Vector2(0, 1);
+            feathersLabel.rectTransform.anchoredPosition = new Vector2(24, -24);
+            feathersLabel.alignment = TextAnchor.MiddleLeft;
+            RefreshCoins();
             var panel = Element("Menu", transform, new Vector2(600, 760), Vector2.zero);
             Label("Title", panel, "小雞衝衝衝", 58, new Vector2(0, 290), new Vector2(580, 90), new Color(1f, 0.82f, 0.25f));
             Label("Subtitle", panel, "選擇難度，開始接住小雞！", 26, new Vector2(0, 208), new Vector2(580, 60), Color.white);
@@ -61,8 +68,15 @@ namespace ChickenRush
                 button.onClick.AddListener(() => difficultyManager.SelectDifficulty(difficulty));
                 Label("Label", rect, names[i], 34, Vector2.zero, rect.sizeDelta, Color.white);
             }
+            var shopButton = ShopUI.Button("ShopButton", panel, runtimeFont, "🛒 商店", new Vector2(500, 66), new Vector2(0, -319));
+            var shopObject = new GameObject("ShopCanvas", typeof(RectTransform));
+            shopObject.SetActive(false);
+            shopObject.transform.SetParent(transform, false);
+            shop = shopObject.AddComponent<ShopCanvas>();
+            shop.Initialize(inventoryManager, runtimeFont);
+            shopButton.onClick.AddListener(shop.Open);
             Label("Hint", panel, "按住螢幕落雞 · 左右拖動調整方向", 23,
-                new Vector2(0, -327), new Vector2(600, 55), new Color(0.7f, 0.8f, 0.87f));
+                new Vector2(0, -382), new Vector2(600, 55), new Color(0.7f, 0.8f, 0.87f));
         }
 
         private static RectTransform Element(string name, Transform parent, Vector2 size, Vector2 position)
@@ -84,17 +98,19 @@ namespace ChickenRush
 
         private void OnEnable()
         {
-            if (inventoryManager != null) inventoryManager.Changed += RefreshCoins;
+            if (inventoryManager != null) inventoryManager.OnCurrencyChanged += RefreshCoins;
             RefreshCoins();
         }
 
         private void OnDisable()
         {
-            if (inventoryManager != null) inventoryManager.Changed -= RefreshCoins;
+            if (shop != null) shop.Close();
+            if (inventoryManager != null) inventoryManager.OnCurrencyChanged -= RefreshCoins;
         }
 
         private void RefreshCoins()
         {
+            if (feathersLabel != null) feathersLabel.text = "羽毛  " + (inventoryManager != null ? inventoryManager.Feathers : 0);
             if (coinsLabel != null) coinsLabel.text = "金幣  " + (inventoryManager != null ? inventoryManager.Coins : 0);
         }
 

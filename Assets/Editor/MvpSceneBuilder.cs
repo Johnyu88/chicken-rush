@@ -44,11 +44,15 @@ public static class MvpSceneBuilder
         importer.SaveAndReimport();
         var sprite = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/TestArt/Square.png");
         BuildExampleItems(sprite);
+        Phase5UIBuilder.Build();
         EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
         var cameraObject = new GameObject("Main Camera", typeof(Camera), typeof(AudioListener));
         cameraObject.tag = "MainCamera";
         cameraObject.transform.position = new Vector3(0, 0, -10);
         var camera = cameraObject.GetComponent<Camera>();
+        cameraObject.AddComponent<CameraShake>();
+        new GameObject("AudioManager", typeof(AudioManager));
+        new GameObject("EffectManager", typeof(EffectManager));
         camera.orthographic = true; camera.orthographicSize = 5;
         camera.backgroundColor = new Color(0.08f, 0.14f, 0.2f);
         camera.clearFlags = CameraClearFlags.SolidColor;

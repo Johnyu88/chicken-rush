@@ -40,6 +40,7 @@ namespace ChickenRush
         private readonly HashSet<ChickenController> chickens = new HashSet<ChickenController>();
         public float RescueSecondsRemaining { get; private set; }
         private bool restarting;
+        private CameraShake cameraShake;
         [SerializeField] private bool waitForDifficulty;
         public float NestMoveSpeed { get; private set; }
 
@@ -68,6 +69,8 @@ namespace ChickenRush
         private void Awake()
         {
             Time.timeScale = 1f;
+            AudioManager.EnsureExists();
+            EffectManager.EnsureExists();
             if (waitForDifficulty) State = GameState.MainMenu;
         }
         private void OnDestroy() { Time.timeScale = 1f; }
@@ -81,6 +84,8 @@ namespace ChickenRush
                 EndGame();
                 return;
             }
+            cameraShake = worldCamera.GetComponent<CameraShake>();
+            if (cameraShake == null) cameraShake = worldCamera.gameObject.AddComponent<CameraShake>();
             if (!waitForDifficulty && ActiveNest == null) SpawnNextNest();
         }
 
@@ -108,7 +113,8 @@ namespace ChickenRush
             if (!IsPlaying || IsChangingNest || nest == null || nest != ActiveNest || !nest.IsFull) return;
             if (!scoring.Begin(pointsPerNest, maxMultiplier)) return;
             IsChangingNest = true;
-            if (successAudioSource != null && successClip != null)
+            PlayClearFeedback(nest.transform.position);
+            if (AudioManager.Instance == null && successAudioSource != null && successClip != null)
             {
                 successAudioSource.pitch = scoring.Pitch(pitchPerCombo);
                 successAudioSource.PlayOneShot(successClip);
@@ -145,6 +151,17 @@ namespace ChickenRush
             onDataChanged.Invoke();
         }
 
+        public void ShakeCamera(float duration, float magnitude)
+        {
+            if (cameraShake != null) cameraShake.Shake(duration, magnitude);
+        }
+        private void PlayClearFeedback(Vector3 position)
+        {
+            if (AudioManager.Instance != null) AudioManager.Instance.PlayBurst();
+            if (EffectManager.Instance != null) EffectManager.Instance.PlayFeathers(position, true);
+            ShakeCamera(.3f, .22f);
+        }
+
         public void Pause() { if (IsPlaying) SetState(GameState.Paused); }
         public void Resume() { if (State == GameState.Paused) SetState(GameState.Playing); }
         public void EndGame() { if (State != GameState.GameOver) SetState(GameState.GameOver); }
@@ -175,6 +192,7 @@ namespace ChickenRush
                 yield return null;
                 RescueSecondsRemaining = Mathf.Max(0f, RescueSecondsRemaining - Time.unscaledDeltaTime);
             }
+            PlayClearFeedback(ActiveNest != null ? ActiveNest.transform.position : Vector3.zero);
             // 母雞掃場 Mock：只清未收納的小雞，保留當前雞窩內容與未入帳獎勵。
             foreach (ChickenController chicken in new List<ChickenController>(chickens))
             {

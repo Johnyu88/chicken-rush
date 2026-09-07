@@ -33,6 +33,8 @@ namespace ChickenRush
         {
             if (!CanEnterNest || nest == null) return false;
             State = ChickenState.Nested;
+            var anger = GetComponent<ChickenAnger>();
+            if (anger != null) anger.StopFeedback();
             body.simulated = false; // 收納後退出物理世界，避免反覆觸發或被撞出去。
             transform.SetParent(nest, true); // 保留進窩位置，之後隨雞窩一起滑走。
             return true;
@@ -40,6 +42,8 @@ namespace ChickenRush
 
         private void OnCollisionEnter2D(Collision2D collision)
         {
+            if (CanEnterNest && collision.relativeVelocity.sqrMagnitude > 36f)
+                gameManager.ShakeCamera(.12f, .08f);
             if (!CanEnterNest || (knockAwayLayers.value & (1 << collision.gameObject.layer)) == 0) return;
             Vector2 direction = collision.contactCount > 0 ? collision.GetContact(0).normal : Vector2.up;
             KnockAway(direction);
