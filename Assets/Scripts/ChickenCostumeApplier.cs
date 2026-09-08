@@ -26,8 +26,9 @@ namespace ChickenRush
             overlay.sprite = item != null ? item.costumeSprite : null;
             overlay.enabled = overlay.sprite != null;
             if (!overlay.enabled) return;
-            overlay.transform.localPosition = new Vector3(item.costumeOffset.x, item.costumeOffset.y, 0);
-            overlay.transform.localScale = new Vector3(item.costumeScale.x, item.costumeScale.y, 1);
+            float unit = ChickenArtSet.UnitScale(overlay.sprite);
+            overlay.transform.localPosition = new Vector3(item.costumeOffset.x, item.costumeOffset.y, 0) - Vector3.Scale(overlay.sprite.bounds.center, new Vector3(item.costumeScale.x * unit, item.costumeScale.y * unit, 1));
+            overlay.transform.localScale = new Vector3(item.costumeScale.x * unit, item.costumeScale.y * unit, 1);
             overlay.transform.localRotation = Quaternion.Euler(0, 0, item.costumeRotation);
             overlay.color = Color.white;
         }

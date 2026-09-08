@@ -21,12 +21,25 @@ namespace ChickenRush
         public SpriteRenderer CostumeAnchor => costumeAnchor;
         public Transform VisualRoot => visualRoot;
 
+        public void SetSprites(Sprite normal, Sprite angry, Sprite happy)
+        {
+            normalSprite = normal; angrySprite = angry; happySprite = happy;
+            Configure();
+        }
+        private void ApplySprite(Sprite sprite)
+        {
+            bodyRenderer.sprite = sprite;
+            float scale = ChickenArtSet.UnitScale(sprite);
+            bodyRenderer.transform.localScale = Vector3.one * scale;
+            bodyRenderer.transform.localPosition = sprite != null ? -sprite.bounds.center * scale : Vector3.zero;
+        }
         // Also used by the prefab migration; only visual children are created or changed.
         public void Configure()
         {
-            if (normalSprite == null) normalSprite = Resources.Load<Sprite>("Art/ChickenNormal");
-            if (angrySprite == null) angrySprite = Resources.Load<Sprite>("Art/ChickenAngry");
-            if (happySprite == null) happySprite = Resources.Load<Sprite>("Art/ChickenHappy");
+            var art = ChickenArtSet.Load();
+            if (normalSprite == null && art != null) normalSprite = art.normal;
+            if (angrySprite == null && art != null) angrySprite = art.angry;
+            if (happySprite == null && art != null) happySprite = art.happy;
             if (visualRoot == null)
             {
                 visualRoot = transform.Find("VisualRoot");
@@ -39,9 +52,9 @@ namespace ChickenRush
             {
                 bodyRenderer.sortingLayerID = legacy.sortingLayerID;
                 bodyRenderer.sortingOrder = legacy.sortingOrder;
-                if (normalSprite != null) legacy.enabled = false;
+                if (normalSprite != null) { legacy.sprite = normalSprite; legacy.enabled = false; }
             }
-            bodyRenderer.sprite = normalSprite; bodyRenderer.color = Color.white;
+            ApplySprite(normalSprite); bodyRenderer.color = Color.white;
             costumeAnchor.sortingLayerID = bodyRenderer.sortingLayerID;
             costumeAnchor.sortingOrder = bodyRenderer.sortingOrder + 1;
             costumeAnchor.enabled = costumeAnchor.sprite != null;
@@ -57,17 +70,17 @@ namespace ChickenRush
         private void OnEnable()
         {
             if (anger == null) anger = GetComponent<ChickenAnger>();
-            anger.OnBecameAngry += OnAngry;
+            anger.OnAngerStateChanged += OnAngerStateChanged;
             SetState(celebrating ? VisualState.Happy : anger.isAngry ? VisualState.Angry : VisualState.Normal, false);
         }
-        private void OnAngry() { if (!celebrating) SetState(VisualState.Angry, true); }
+        private void OnAngerStateChanged(bool angry) { if (!celebrating) SetState(angry ? VisualState.Angry : VisualState.Normal, angry); }
         public void Celebrate() { if (celebrating) return; celebrating = true; SetState(VisualState.Happy, true); }
         private void SetState(VisualState state, bool pulse)
         {
             State = state;
             if (bodyRenderer == null) return;
             var sprite = state == VisualState.Happy ? happySprite : state == VisualState.Angry ? angrySprite : normalSprite;
-            bodyRenderer.sprite = sprite != null ? sprite : normalSprite;
+            ApplySprite(sprite != null ? sprite : normalSprite);
             if (pulse) { pulseTime = 0; pulsing = true; }
         }
         private void Update()
@@ -80,7 +93,7 @@ namespace ChickenRush
         }
         private void OnDisable()
         {
-            if (anger != null) anger.OnBecameAngry -= OnAngry;
+            if (anger != null) anger.OnAngerStateChanged -= OnAngerStateChanged;
             pulsing = false;
             if (visualRoot != null) visualRoot.localScale = baseScale;
         }

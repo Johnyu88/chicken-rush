@@ -6,7 +6,8 @@ namespace ChickenRush
     [RequireComponent(typeof(Rigidbody2D), typeof(Collider2D), typeof(SpriteRenderer))]
     public sealed class ChickenAnger : MonoBehaviour
     {
-        public event System.Action OnBecameAngry;
+        public event System.Action OnBecameAngry; // Legacy Phase 6/7 subscribers.
+        public event System.Action<bool> OnAngerStateChanged;
         public bool isAngry { get; private set; }
         private Rigidbody2D body;
         private SpriteRenderer visual;
@@ -56,6 +57,7 @@ namespace ChickenRush
             body.sharedMaterial = angryMaterial;
             foreach (var collider in colliders) collider.sharedMaterial = angryMaterial;
             body.WakeUp();
+            OnAngerStateChanged?.Invoke(isAngry);
             OnBecameAngry?.Invoke();
             if (AudioManager.Instance != null) AudioManager.Instance.PlayAngry();
             if (EffectManager.Instance != null) aura = EffectManager.Instance.AttachAnger(transform);

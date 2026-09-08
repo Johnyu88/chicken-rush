@@ -123,7 +123,7 @@ public static class MvpSceneBuilder
         Set(difficulty, "gameManager", manager);
         Set(difficulty, "spawner", spawner);
         Set(difficulty, "mainMenuCanvas", menu.gameObject);
-        Set(difficulty, "obstacleSprite", Resources.Load<Sprite>("Art/Windmill"));
+        Set(difficulty, "obstacleSprite", ChickenArtSet.Load().windmill);
         Set(menu, "difficultyManager", difficulty);
         Set(menu, "inventoryManager", inventory);
         var ui = new GameObject("RescueUI", typeof(RescueMockUI)).GetComponent<RescueMockUI>();

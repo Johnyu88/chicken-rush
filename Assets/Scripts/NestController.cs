@@ -31,7 +31,7 @@ namespace ChickenRush
             movementDistance = 0f;
             float halfWidth = 0f;
             foreach (Renderer visual in GetComponentsInChildren<Renderer>())
-                halfWidth = Mathf.Max(halfWidth, visual.bounds.extents.x);
+                if (visual.enabled) halfWidth = Mathf.Max(halfWidth, visual.bounds.extents.x);
             float viewportHalfWidth = camera.orthographicSize * camera.aspect;
             float maximumHalfWidth = viewportHalfWidth * (manager.NestMoveSpeed > 0f ? 0.65f : 0.95f);
             if (halfWidth > maximumHalfWidth && halfWidth > 0f)
@@ -82,7 +82,7 @@ namespace ChickenRush
             Vector3 start = transform.position;
             float rightEdge = start.x;
             foreach (Renderer visual in GetComponentsInChildren<Renderer>())
-                rightEdge = Mathf.Max(rightEdge, visual.bounds.max.x);
+                if (visual.enabled) rightEdge = Mathf.Max(rightEdge, visual.bounds.max.x);
             foreach (Collider2D collider in GetComponentsInChildren<Collider2D>())
                 rightEdge = Mathf.Max(rightEdge, collider.bounds.max.x);
             float leftEdge = worldCamera.ViewportToWorldPoint(new Vector3(0f, 0.5f,

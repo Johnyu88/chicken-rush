@@ -117,8 +117,8 @@ Transform:
   m_GameObject: {fileID: 1804876716970368948}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalPosition: {x: -0, y: -0, z: -0}
+  m_LocalScale: {x: 0.079744816, y: 0.079744816, z: 0.079744816}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 9094314301600170316}
@@ -172,7 +172,7 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_MaskInteraction: 0
-  m_Sprite: {fileID: 21300000, guid: 271a04fcddc72c740beacb995003283e, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 0aa5d18f088b98d4687b2110d964a13e, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -383,7 +383,7 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_MaskInteraction: 0
-  m_Sprite: {fileID: 7482667652216324306, guid: c57f4bd6add5f624795de5951745e6f5, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 0aa5d18f088b98d4687b2110d964a13e, type: 3}
   m_Color: {r: 1, g: 0.8, b: 0.15, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -417,9 +417,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6f9726a87a9484442af5b34abeb503bc, type: 3}
   m_Name:
   m_EditorClassIdentifier: Assembly-CSharp::ChickenRush.ChickenVisual
-  normalSprite: {fileID: 21300000, guid: 271a04fcddc72c740beacb995003283e, type: 3}
-  angrySprite: {fileID: 21300000, guid: 5c8fed386e7c53d4f9950055b41464c8, type: 3}
-  happySprite: {fileID: 21300000, guid: 249632ccaaff0ba4ca8479b4c51482fe, type: 3}
+  normalSprite: {fileID: 21300000, guid: 0aa5d18f088b98d4687b2110d964a13e, type: 3}
+  angrySprite: {fileID: 21300000, guid: 1c79581ee66e8024483788884cfcdd19, type: 3}
+  happySprite: {fileID: 21300000, guid: 216fb04dc65b38d4ab0ea708a2554d44, type: 3}
   visualRoot: {fileID: 9094314301600170316}
   bodyRenderer: {fileID: 7637470822306464843}
   costumeAnchor: {fileID: 6798848540339684918}

@@ -36,12 +36,15 @@ public static class Phase7SmokeRunner
             var prefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Prefabs/Chicken.prefab");
             var visual = prefab.GetComponent<ChickenVisual>();
             Check(visual != null && prefab.GetComponent<ChickenCostumeApplier>() != null, "Delivered prefab has missing scripts");
-            Check(visual.BodyRenderer != null && visual.BodyRenderer.sprite == Resources.Load<Sprite>("Art/ChickenNormal"), "Delivered body reference missing");
+            Check(visual.BodyRenderer != null && visual.BodyRenderer.sprite == ChickenArtSet.Load().normal, "Delivered body reference missing");
             Check(visual.CostumeAnchor != null, "Delivered costume anchor missing");
+            Check(AssetDatabase.GetAssetPath(visual.BodyRenderer.sprite).StartsWith("Assets/TestArt/"), "Body not bound to TestArt");
+            Check(prefab.GetComponent<SpriteRenderer>().sprite == ChickenArtSet.Load().normal, "Root default sprite not assigned");
+            Check(Mathf.Approximately(visual.BodyRenderer.sprite.bounds.size.y * visual.BodyRenderer.transform.localScale.y, 1), "PPU normalization failed");
             var hat = Resources.Load<ItemDataSO>("Items/costume.yellow_hat");
-            Check(hat.costumeSprite == Resources.Load<Sprite>("Art/YellowHat"), "Delivered costume sprite missing");
+            Check(hat.costumeSprite == ChickenArtSet.Load().hat, "Delivered costume sprite missing");
             var nest = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Prefabs/Nest.prefab");
-            Check(nest.transform.Find("Visual").GetComponent<SpriteRenderer>().sprite == Resources.Load<Sprite>("Art/Nest"), "Delivered nest sprite missing");
+            Check(nest.transform.Find("Visual").GetComponent<SpriteRenderer>().sprite == ChickenArtSet.Load().nest, "Delivered nest sprite missing");
             Debug.Log("PHASE7_DELIVERED_ASSETS_PASS"); EditorApplication.Exit(0);
         }
         catch (Exception ex) { Debug.LogException(ex); EditorApplication.Exit(1); }
@@ -95,7 +98,7 @@ public static class Phase7SmokeRunner
                 Object.FindFirstObjectByType<GameDifficultyManager>().SelectDifficulty(GameDifficulty.Hell);
                 normal = Spawn(new Vector3(-1, 0, 0));
                 var visual = normal.GetComponent<ChickenVisual>();
-                Check(visual.State == ChickenVisual.VisualState.Normal && visual.BodyRenderer.sprite == Resources.Load<Sprite>("Art/ChickenNormal"), "Normal sprite");
+                Check(visual.State == ChickenVisual.VisualState.Normal && visual.BodyRenderer.sprite == ChickenArtSet.Load().normal, "Normal sprite");
                 Check(!visual.CostumeAnchor.enabled, "Unowned costume shown");
                 var hat = Resources.Load<ItemDataSO>("Items/costume.yellow_hat");
                 Check(game.Inventory.AddCoins(100) && game.Inventory.BuyItem(hat) && game.Inventory.EquipItem(hat), "Costume transaction");
@@ -109,22 +112,22 @@ public static class Phase7SmokeRunner
                 hat.costumeSprite = originalSprite; game.Inventory.AddCoins(1);
                 angry = Spawn(Vector3.zero); happy = Spawn(new Vector3(1, 0, 0));
                 Check(angry.GetComponent<ChickenVisual>().CostumeAnchor.sprite == hat.costumeSprite, "Spawn costume");
-                int angerEvents = 0; var anger = angry.GetComponent<ChickenAnger>(); anger.OnBecameAngry += () => angerEvents++;
+                int angerEvents = 0; var anger = angry.GetComponent<ChickenAnger>(); anger.OnAngerStateChanged += active => { Check(active, "Anger event payload"); angerEvents++; };
                 var material = angry.GetComponent<Rigidbody2D>().sharedMaterial;
                 float radius = angry.GetComponent<CircleCollider2D>().radius;
                 var method = typeof(ChickenAnger).GetMethod("BecomeAngry", BindingFlags.Instance | BindingFlags.NonPublic);
                 method.Invoke(anger, null); method.Invoke(anger, null);
                 Check(angerEvents == 1 && angry.GetComponent<ChickenVisual>().State == ChickenVisual.VisualState.Angry, "Anger event/state");
-                Check(angry.GetComponent<ChickenVisual>().BodyRenderer.sprite == Resources.Load<Sprite>("Art/ChickenAngry"), "Angry sprite");
+                Check(angry.GetComponent<ChickenVisual>().BodyRenderer.sprite == ChickenArtSet.Load().angry, "Angry sprite");
                 Check(angry.GetComponent<CircleCollider2D>().radius == radius && Mathf.Approximately(angry.transform.localScale.x, .32f * 1.2f), "Extra physical inflation");
                 Check(Mathf.Approximately(material.bounciness, .4f) && Mathf.Approximately(angry.GetComponent<Rigidbody2D>().sharedMaterial.bounciness, .8f), "Shared physics material mutated");
                 happy.GetComponent<ChickenVisual>().Celebrate();
                 foreach (var c in new[] { normal, angry, happy }) c.GetComponent<Rigidbody2D>().simulated = false;
                 var rotor = Object.FindFirstObjectByType<WindmillVisual>();
-                Check(rotor != null && rotor.GetComponent<SpriteRenderer>().sprite == Resources.Load<Sprite>("Art/Windmill"), "Windmill art");
+                Check(rotor != null && rotor.GetComponent<SpriteRenderer>().sprite == ChickenArtSet.Load().windmill, "Windmill art");
                 var obstacle = rotor.transform.parent.GetComponent<CircleCollider2D>();
                 Check(Mathf.Approximately(obstacle.radius, 31f / 64f) && Mathf.Approximately(obstacle.sharedMaterial.bounciness, .4f) && obstacle.transform.localScale == Vector3.one * 1.1f, "Obstacle physics changed");
-                Check(game.ActiveNest.transform.Find("Visual").GetComponent<SpriteRenderer>().sprite == Resources.Load<Sprite>("Art/Nest"), "Nest art");
+                Check(game.ActiveNest.transform.Find("Visual").GetComponent<SpriteRenderer>().sprite == ChickenArtSet.Load().nest, "Nest art");
                 stage = 1; frames = 0; return;
             }
             if (stage == 1)
@@ -137,7 +140,7 @@ public static class Phase7SmokeRunner
                 foreach (var c in new[] { normal, angry, happy }) Object.Destroy(c.gameObject);
                 for (int i = 0; i < game.ActiveNest.Capacity; i++) Check(game.ActiveNest.TryAcceptChicken(Spawn(game.ActiveNest.transform.position)), "Fill failed");
                 foreach (var v in game.ActiveNest.GetComponentsInChildren<ChickenVisual>())
-                    Check(v.State == ChickenVisual.VisualState.Happy && v.BodyRenderer.sprite == Resources.Load<Sprite>("Art/ChickenHappy"), "Whole nest did not celebrate");
+                    Check(v.State == ChickenVisual.VisualState.Happy && v.BodyRenderer.sprite == ChickenArtSet.Load().happy, "Whole nest did not celebrate");
                 stage = 2; return;
             }
             if (stage == 2)
@@ -165,15 +168,15 @@ public static class Phase7SmokeRunner
     private static void Capture()
     {
         if (SystemInfo.graphicsDeviceType == UnityEngine.Rendering.GraphicsDeviceType.Null) return;
-        var camera = Camera.main; var size = camera.orthographicSize; var position = camera.transform.position;
+        var camera = Camera.main; var size = camera.orthographicSize; var aspect = camera.aspect; var position = camera.transform.position;
         foreach (var c in new[] { normal, angry, happy }) c.transform.localScale = Vector3.one * .8f;
         camera.orthographicSize = 1.05f; camera.transform.position = new Vector3(0, .12f, -10);
-        var target = new RenderTexture(1200, 630, 24); camera.targetTexture = target; camera.Render();
+        camera.aspect = 1200f / 630f; var target = new RenderTexture(1200, 630, 24); camera.targetTexture = target; camera.Render();
         var previous = RenderTexture.active; RenderTexture.active = target;
         var image = new Texture2D(1200, 630, TextureFormat.RGB24, false);
         image.ReadPixels(new Rect(0, 0, 1200, 630), 0, 0); image.Apply();
         System.IO.File.WriteAllBytes("Phase7Characters.png", image.EncodeToPNG());
-        RenderTexture.active = previous; camera.targetTexture = null; camera.orthographicSize = size; camera.transform.position = position;
+        RenderTexture.active = previous; camera.targetTexture = null; camera.orthographicSize = size; camera.aspect = aspect; camera.transform.position = position;
         Object.Destroy(image); Object.Destroy(target);
     }
 }
