@@ -1,5 +1,5 @@
 # 🐣《小雞衝衝衝 (Chicken Rush)》遊戲設計與營運白皮書
-**Version:** 1.0.0 (Phase 7 Implemented; Isolated Verification)
+**Version:** 1.0.0 (Phase 7 Implemented; Full Package Verification)
 **Engine:** Unity 6 (6000.3.23f1)  
 **Architecture:** Data-Driven (ScriptableObject) + Web2.5 Invisible Economy + AI-Led Operations
 
@@ -103,7 +103,7 @@
 * **Phase 4 (Data & Save)**：完成 `ItemDataSO`、`PlayerData` (JSON/PlayerPrefs 本地存檔)、`InventoryManager` 雙幣制管理，數據已 Commit/Push 至 GitHub 倉庫。
 * **Phase 5 (Shop & Inventory UI)**：**已完成**。完成四類商店分頁、道具卡片購買／裝備狀態，以及金幣／羽毛即時顯示。
 * **Phase 6 (Juice 音效、粒子特效與 Camera Shake)**：**已完成**。完成 SFX／BGM 管理、Combo 遞增音高、進窩羽毛與暴走火花，以及強烈撞擊、滿窩與救援清場的相機震動。
-* **Phase 7 (2D Art & Costume Overlay)**：**已完成**。完成 TestArt 正式資產直接綁定、OnAngerStateChanged 事件驅動的正常／生氣／慶祝表情、CostumeAnchor 動態穿戴，以及雞窩與風車 Sprite；以美術子物件補償不同 PPU，保留既有 Collider2D、Rigidbody2D 與物理材質設定。Phase 7 功能及 Phase 5／6 回歸測試於隔離套件環境通過，完整原套件組合仍待驗證。
+* **Phase 7 (2D Art & Costume Overlay)**：**已完成**。完成 TestArt 正式資產直接綁定、OnAngerStateChanged 事件驅動的正常／生氣／慶祝表情、CostumeAnchor 動態穿戴，以及雞窩與風車 Sprite；以美術子物件補償不同 PPU，保留既有 Collider2D、Rigidbody2D 與物理材質設定。已修正 Unity 6000.3.23f1 的套件版本不相容，Phase 7 功能及 Phase 5／6 回歸測試於使用完整修正套件清單的副本通過。
 
 ---
 

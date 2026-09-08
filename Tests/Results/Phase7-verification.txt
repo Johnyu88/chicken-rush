@@ -5,5 +5,14 @@ PASS: Phase7SmokeRunner.VerifyMigration (original Chicken and Nest prefab collid
 PASS: Phase6SmokeRunner.Run; Phase5SmokeRunner.Run.
 Inspected: Phase7Characters.png and Phase7Scene.png. Uses the six imported TestArt sprites with their configured PPU; visual child scales normalize dimensions without changing physics. Capture aspect corrected and images inspected.
 Original SampleScene.unity preserved (SHA256 8F5EA5E7FC5E1A84F7A8E8498F688FA88069982F263F62BFCFC4AF6CC6B7588E).
-Existing Unity Editor SearchDatabase indexing exception remains in smoke-test logs; no game-script exceptions. Full original package graph remains unverified due to existing version mismatch.
+Existing Unity Editor SearchDatabase indexing exception remains in smoke-test logs; no game-script exceptions. Superseded by full-package verification below.
 PASS: Phase7SmokeRunner.ValidateDeliveredAssets for TestArt references, root default normal sprite and PPU normalization; delivered prefab, body, costume anchor, nest and hat references resolve.
+
+2026-09-09 full-package verification:
+Unity 6000.3.23f1; same corrected manifest and Unity-generated lock as the main project.
+PASS: package resolution and script compilation with all retained project dependencies.
+PASS (exit 0): Phase7SmokeRunner.Run, Phase6SmokeRunner.Run, Phase5SmokeRunner.Run.
+No invalid-dependency or C# compiler errors in the three fresh full-packages logs.
+Known editor-only SearchDatabase startup indexing exception remains; game assertions pass.
+Original working scene was not rebuilt or replaced.
+Timeline reference: https://docs.unity3d.com/kr/6000.0/Manual/com.unity.timeline.html

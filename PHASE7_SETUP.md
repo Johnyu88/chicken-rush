@@ -45,4 +45,6 @@ Unity 6000.3.23f1 隔離副本：
 - Phase7SmokeRunner.ValidateDeliveredAssets：確認直接 TestArt 引用與 Prefab 元件完整。
 - Phase5SmokeRunner.Run／Phase6SmokeRunner.Run：商店與 Juice 回歸。
 
-沿用內建模組＋uGUI 2.0.0 的精簡套件驗證環境；完整原套件組合仍有既有版本不相容問題。
+2026-09-09 已補完完整套件驗證：使用與專案相同的修正後 manifest／packages-lock，在副本重新解析、編譯並通過 Phase 5／6／7，無需精簡套件。Timeline 改為 1.8.10、uGUI 對齊內附 2.0.0，移除該編輯器不存在的 physicscore2d、tetgen、timelinefoundation 模組。保留其他原有套件。
+
+原工作場景未重建。測試仍記錄 UnityEditor.Search.SearchDatabase 的既有啟動索引例外，未造成測試失敗；此次未變更編輯器搜尋功能。
