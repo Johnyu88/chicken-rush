@@ -179,6 +179,7 @@ GameObject:
   - component: {fileID: 380695228}
   - component: {fileID: 380695227}
   - component: {fileID: 380695226}
+  - component: {fileID: 380695232}
   m_Layer: 0
   m_Name: MainMenuCanvas
   m_TagString: Untagged
@@ -186,6 +187,22 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
+--- !u!114 &380695232
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 380695225}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ce809f31e2d641d69305f309a4159963, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::ChickenRush.WishingWellManager
+  inventory: {fileID: 1266092513}
+  coinPrice: 100
+  featherPrice: 10
+  theme: 0
 --- !u!114 &380695226
 MonoBehaviour:
   m_ObjectHideFlags: 0

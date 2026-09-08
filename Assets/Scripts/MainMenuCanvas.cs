@@ -8,6 +8,7 @@ using UnityEngine.InputSystem.UI;
 namespace ChickenRush
 {
     [RequireComponent(typeof(Canvas), typeof(CanvasScaler), typeof(GraphicRaycaster))]
+    [RequireComponent(typeof(WishingWellManager))]
     public sealed class MainMenuCanvas : MonoBehaviour
     {
         [SerializeField] private GameDifficultyManager difficultyManager;
@@ -16,7 +17,7 @@ namespace ChickenRush
         [SerializeField] private InventoryManager inventoryManager;
         private Text coinsLabel;
         private Text feathersLabel;
-        private ShopCanvas shop;
+        private WishingWellCanvas wishingWell;
 
         private void Awake()
         {
@@ -68,13 +69,16 @@ namespace ChickenRush
                 button.onClick.AddListener(() => difficultyManager.SelectDifficulty(difficulty));
                 Label("Label", rect, names[i], 34, Vector2.zero, rect.sizeDelta, Color.white);
             }
-            var shopButton = ShopUI.Button("ShopButton", panel, runtimeFont, "🛒 商店", new Vector2(500, 66), new Vector2(0, -319));
-            var shopObject = new GameObject("ShopCanvas", typeof(RectTransform));
-            shopObject.SetActive(false);
-            shopObject.transform.SetParent(transform, false);
-            shop = shopObject.AddComponent<ShopCanvas>();
-            shop.Initialize(inventoryManager, runtimeFont);
-            shopButton.onClick.AddListener(shop.Open);
+            var wishingWellButton = RuntimeUI.Button("WishButton", panel, runtimeFont, "✨ 許願池", new Vector2(500, 66), new Vector2(0, -319));
+            var wishingWellObject = new GameObject("WishingWellCanvas", typeof(RectTransform));
+            wishingWellObject.SetActive(false);
+            wishingWellObject.transform.SetParent(transform, false);
+            wishingWell = wishingWellObject.AddComponent<WishingWellCanvas>();
+            var wishManager = GetComponent<WishingWellManager>();
+            if (wishManager == null) wishManager = gameObject.AddComponent<WishingWellManager>();
+            wishManager.Initialize(inventoryManager);
+            wishingWell.Initialize(inventoryManager, wishManager, runtimeFont);
+            wishingWellButton.onClick.AddListener(wishingWell.Open);
             Label("Hint", panel, "按住螢幕落雞 · 左右拖動調整方向", 23,
                 new Vector2(0, -382), new Vector2(600, 55), new Color(0.7f, 0.8f, 0.87f));
         }
@@ -104,7 +108,7 @@ namespace ChickenRush
 
         private void OnDisable()
         {
-            if (shop != null) shop.Close();
+            if (wishingWell != null) wishingWell.Close();
             if (inventoryManager != null) inventoryManager.OnCurrencyChanged -= RefreshCoins;
         }
 

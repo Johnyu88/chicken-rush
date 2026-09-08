@@ -1,9 +1,9 @@
 # 🐣《小雞衝衝衝 (Chicken Rush)》遊戲設計與營運白皮書
-**Version:** 1.1.0 (Design Update; Phase 1–7 Implementation Unchanged)
+**Version:** 1.2.0 (Phase 8A Wishing Well; Santa Theme)
 **Engine:** Unity 6 (6000.3.23f1)  
 **Architecture:** Data-Driven (ScriptableObject) + Web2.5 Invisible Economy + AI-Led Operations
 
-> **文件狀態說明**：「已完成」以第 6 章 Phase 1～7 的交付紀錄為準；「已規劃」表示已納入設計，「未實作」表示尚無對應執行功能。本文經濟擴充、AI 營運與全球活動願景不代表已上線。此次僅更新白皮書，不修改已完成程式。
+> **文件狀態說明**：「已完成」以第 6 章 Phase 1～7 的交付紀錄為準；「已規劃」表示已納入設計，「未實作」表示尚無對應執行功能。本文經濟擴充、AI 營運與全球活動願景不代表已上線。Phase 8A 已將 Phase 5 玩家入口改為本地許願；全球活動與 AI 分析仍屬規劃。
 
 ---
 
@@ -75,7 +75,17 @@
    * 玩家無須操作複雜的交易市場，只需向「AI 管家」下達自然語言指令（如：「幫我把重複的家具贈送給好友」），由 AI Agent 全自動完成資產的打包與轉贈。
 
 
-### 4.3 Santa Live Journey & Global Wishing Event（聖誕老人全球送禮與即時許願活動）
+### 4.3 Wishing Well & Santa Event System（Phase 8A）
+
+**已完成：本地許願核心與 UI 主題。** 玩家主要取得入口為「✨ 許願池」，取代傳統四分類商品購買清單。金幣預設 100／次、羽毛預設 10／次，價格由 WishingWellManager Inspector 設定，沿用 InventoryManager 雙幣制。
+
+每次只從 Resources/Items 中具有有效 itemId、尚未擁有的 ItemType.Costume 隨機抽取；已擁有不再抽中。餘額不足、全部收集或設定無效時不扣款；空獎池或重複 ID 視為 InvalidConfiguration。交易採「Copy PlayerData → 驗證 → 扣款 → 加 OwnedItemId → Commit」，扣款與解鎖同時存檔成功才發布變更事件。BuyItem 保留相容舊測試，不再作為玩家 UI 購買入口。
+
+玩家按下許願後看到等待訊息，再以 Fade／Scale 揭曉飾品，可按「裝備」或逐件查看已解鎖飾品。關閉等待畫面會取消尚未執行的許願；已完成交易則保留於背包。WishTheme.WishingWell 與 WishTheme.Santa 共用相同價格、抽取與存檔核心，Santa 目前只有 UI Theme。
+
+**玩家許願 → 解鎖虛擬飾品 → 裝備率／使用率 → AI Agent 分析 → Meme 熱度 → O2O 實體周邊候選。** 本階段完成許願、解鎖與裝備；後續使用率分析、AI Agent、Meme 診斷與 O2O 仍為已規劃／未實作。沒有世界地圖、即時追蹤或全球領獎後端。
+
+### 4.4 Santa Live Journey & Global Wishing Event（聖誕老人全球送禮與即時許願活動）
 
 **狀態：已規劃／未實作。** 本設計是 **Wishing Well & Santa Event System** 的擴充與統一定位；許願井、Santa 旅程、禮物開箱共用同一活動核心，不建立第二套活動經濟。
 
@@ -115,7 +125,7 @@
 
 模擬旅程不代表可以模擬玩家參與量：無正式統計時顯示暫無資料；展示用數值必須標記「示意資料」，不得計入正式活動成果。
 
-### 4.4 共用 Global Live Event Framework
+### 4.5 共用 Global Live Event Framework
 
 **狀態：已規劃／未實作。** 以 Wishing Well & Santa Event System 的許願與領獎核心擴充可重複使用框架，Santa 是第一個活動主題，而非另一套獨立系統。
 
@@ -139,7 +149,7 @@
 
 | Agent | 定位與責任 |
 | :--- | :--- |
-| 🐧 Penguin AI Agent | 玩家可見、可互動的企鵝管家 NPC；提供第 4.3 節的活動入口、位置播報、到站提醒、許願引導、禮物通知與活動說明。 |
+| 🐧 Penguin AI Agent | 玩家可見、可互動的企鵝管家 NPC；提供第 4.4 節的活動入口、位置播報、到站提醒、許願引導、禮物通知與活動說明。 |
 | 🎨 Trends & Asset Agent | 幕後分析許願率、開箱率、裝備率及活動參與度；結合全球社群熱點，將流行符號抽象化，提出 ItemDataSO 規格、提示詞與 2D／3D 資產概念。 |
 | 📢 Marketing Agent | 依熱門活動、道具與迷因產生短影音腳本及社群內容，可延用企鵝管家第一人稱；依第 5.3 節經人類批准後發布。 |
 | 🛡️ Auditor Agent | 維持第 5.2 節既有安全與合規審查，檢查活動台詞、資產及行銷提案，並檢查模擬旅程與示意統計是否如實標示。 |
@@ -180,21 +190,22 @@ Trends & Asset Agent 結合漏斗轉換、持續裝備、回訪與互動品質�
 * **Phase 2 (Juice & Anger)**：導入 `PhysicsMaterial2D` 彈性、`Pachinko Obstacles` 風車障礙物與 `ChickenAnger` 撞擊變紅膨脹機制。
 * **Phase 3 (Difficulty UI)**：建立 `MainMenuCanvas`，實現「悠閒、地獄、惡魔、變態」四級難度動態切換與傳參。
 * **Phase 4 (Data & Save)**：完成 `ItemDataSO`、`PlayerData` (JSON/PlayerPrefs 本地存檔)、`InventoryManager` 雙幣制管理，數據已 Commit/Push 至 GitHub 倉庫。
-* **Phase 5 (Shop & Inventory UI)**：**已完成**。完成四類商店分頁、道具卡片購買／裝備狀態，以及金幣／羽毛即時顯示。
+* **Phase 5 (Wishing Well & Santa Event System)**：**已完成，Phase 8A 重構**。玩家入口改為許願池，完成金幣／羽毛許願、未擁有 Costume 隨機解鎖、原子存檔、揭曉與裝備，以及 Santa UI 主題。全球旅程仍未實作。
 * **Phase 6 (Juice 音效、粒子特效與 Camera Shake)**：**已完成**。完成 SFX／BGM 管理、Combo 遞增音高、進窩羽毛與暴走火花，以及強烈撞擊、滿窩與救援清場的相機震動。
 * **Phase 7 (2D Art & Costume Overlay)**：**已完成**。完成 TestArt 正式資產直接綁定、OnAngerStateChanged 事件驅動的正常／生氣／慶祝表情、CostumeAnchor 動態穿戴，以及雞窩與風車 Sprite；以美術子物件補償不同 PPU，保留既有 Collider2D、Rigidbody2D 與物理材質設定。已修正 Unity 6000.3.23f1 的套件版本不相容，Phase 7 功能及 Phase 5／6 回歸測試於使用完整修正套件清單的副本通過。
 
 
-### 6.1 後續設計狀態（不變更 Phase 1～7 完成紀錄）
+### 6.1 交付與後續設計狀態
 
 | 範圍 | 設計狀態 | 實作狀態 |
 | :--- | :--- | :--- |
-| Phase 1～7 | 維持上述既有交付內容 | 已完成；此次未修改程式 |
-| Wishing Well & Santa 共用核心、Santa Live Journey & Global Wishing Event | 已規劃，見第 4.3～4.4 節 | 未實作 |
-| Global Live Event Framework 與季節換皮 | 已規劃，見第 4.4 節 | 未實作 |
+| Phase 1～7 | Phase 5 依 Phase 8A 更新玩家入口，其餘保留既有交付 | 已完成 |
+| Phase 8A：本地 Wishing Well & Santa 共用核心／UI Theme | 見第 4.3 節 | 已完成 |
+| Santa Live Journey & Global Wishing Event | 已規劃，見第 4.4～4.5 節 | 未實作 |
+| Global Live Event Framework 與季節換皮 | 已規劃，見第 4.5 節 | 未實作 |
 | 企鵝 AI Agent / NPC、幕後 AI 營運及 O2O 需求診斷 | 已規劃，見第 5 章 | 未實作 |
 
-本次交付僅為白皮書設計更新，不包含世界地圖、Santa Tracker 介接、全球後端、AI Agent 執行服務或活動貨幣／獎勵程式。後續實作須另行安排，不以文件完成代替功能完成。
+本次 Phase 8A 交付本地許願交易與 UI Theme；Santa Live Journey／Global Live Event 為已規劃／未實作，不包含世界地圖、Santa Tracker 介接、全球後端或 AI Agent 執行服務。未新增貨幣系統。
 
 ---
 

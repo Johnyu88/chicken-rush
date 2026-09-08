@@ -72,10 +72,25 @@ namespace ChickenRush
             return Commit(next);
         }
 
+        // A wish spends and unlocks together; no observable or persisted intermediate debit.
+        public bool TryUnlockFromWish(ItemDataSO item, int coinCost, int featherCost)
+        {
+            EnsureLoaded();
+            var next = data.Copy();
+            if (item == null || !item.HasValidId || item.itemType != ItemType.Costume ||
+                coinCost < 0 || featherCost < 0 || next.ownedItemIds.Contains(item.itemId) ||
+                next.coins < coinCost || next.feathers < featherCost) return false;
+            next.coins -= coinCost;
+            next.feathers -= featherCost;
+            next.ownedItemIds.Add(item.itemId);
+            return Commit(next);
+        }
+
+        // Legacy compatibility API for old saves/tests; not a player-facing purchase entry.
         public bool BuyItem(ItemDataSO item)
         {
             EnsureLoaded();
-            if (item == null || !item.IsValid || data.ownedItemIds.Contains(item.itemId) || data.coins < item.price)
+            if (item == null || !item.IsValid || item.price < 0 || data.ownedItemIds.Contains(item.itemId) || data.coins < item.price)
                 return false;
             var next = data.Copy();
             next.coins -= item.price;

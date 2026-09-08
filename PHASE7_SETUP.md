@@ -23,9 +23,9 @@ Chicken                ← 原本 Collider2D / Rigidbody2D
     └── CostumeAnchor  ← SpriteRenderer，排序在 Body 前方
 ```
 
-在商店購買並裝備黃色帽子後，新生成及現有小雞會透過 InventoryManager 自動顯示飾品。
+在許願池解鎖並裝備黃色帽子後，新生成及現有小雞會透過 InventoryManager 自動顯示飾品。
 
-`ItemDataSO.costumeSprite` 是穿戴貼圖；`icon` 仍為商店圖示。`costumeOffset`、`costumeScale`、`costumeRotation` 控制美術根節點中的位置、尺寸與角度。Sprite 會先依長邊正規化為 1 單位，因此 PPU 不同也能使用一致的穿戴尺寸。
+`ItemDataSO.costumeSprite` 是穿戴貼圖；`icon` 為許願揭曉圖示 / Item Icon。`costumeOffset`、`costumeScale`、`costumeRotation` 控制美術根節點中的位置、尺寸與角度。Sprite 會先依長邊正規化為 1 單位，因此 PPU 不同也能使用一致的穿戴尺寸。
 
 新增草莓帽等飾品時，建立 Costume 類別的 ItemDataSO，指定穿戴 Sprite，放入 Resources/Items 並保持 itemId 唯一。沒有裝備、缺少資產或沒有穿戴 Sprite 時，覆蓋層自動隱藏。
 
@@ -43,7 +43,7 @@ Unity 6000.3.23f1 隔離副本：
 - Phase7SmokeRunner.Run：事件、表情、裝備、PPU、滿窩與物理回歸。
 - Phase7SmokeRunner.VerifyMigration：原始 Prefab 遷移前後物理欄位比對。
 - Phase7SmokeRunner.ValidateDeliveredAssets：確認直接 TestArt 引用與 Prefab 元件完整。
-- Phase5SmokeRunner.Run／Phase6SmokeRunner.Run：商店與 Juice 回歸。
+- Phase5SmokeRunner.Run／Phase6SmokeRunner.Run：許願池與 Juice 回歸。
 
 2026-09-09 已補完完整套件驗證：使用與專案相同的修正後 manifest／packages-lock，在副本重新解析、編譯並通過 Phase 5／6／7，無需精簡套件。Timeline 改為 1.8.10、uGUI 對齊內附 2.0.0，移除該編輯器不存在的 physicscore2d、tetgen、timelinefoundation 模組。保留其他原有套件。
 

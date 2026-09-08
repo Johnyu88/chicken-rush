@@ -1,8 +1,12 @@
-Phase 5 verification
-- Unity 6000.3.23f1; isolated copy; built-in modules and uGUI 2.0.0.
-- Phase5SmokeRunner.Run: PHASE5_SMOKE_PASS.
-- Screenshot: Phase5Shop.png, 720 x 960; inspected for layout overlap.
-- An editor SearchDatabase indexing exception occurred during first startup; no game-script exception was reported.
-- Full original package graph is incompatible with declared Unity 6000.3.23f1. A Unity 6000.6 trial stalled at Burst IL postprocessing. Original project packages/version were preserved.
-- Phase4SmokeRunner.Run: CHICKEN_RUSH_PHASE4_PASS (purchase, equip, validation, overflow, menu, settlement, scene reload).
-- Phase4SmokeRunner.VerifySaved: CHICKEN_RUSH_PHASE4_PERSISTENCE_PASS (process restart, four slots, free items, backup, normalization, snapshots).
+Phase 8A / Phase 5 Wishing Well verification
+Unity 6000.3.23f1; project copy uses the same complete Packages manifest and lock.
+RED: old runtime failed with Wishing Well entry missing (exit 1).
+PASS: Phase5SmokeRunner.Run (exit 0).
+PASS: Phase5SmokeRunner.RunDeliveredScene (exit 0); copied actual SampleScene, no full scene rebuild.
+Checks: default closed/menu open, insufficient coins/feathers unchanged, single-item catalog, atomic feather debit and saved ownership observed during currency event, independent coin wish, duplicate rejection, AllCollected/no charge, malformed inputs and obsolete item-price independence, saved inventory reloaded, legacy JSON migration, reveal equipment, Santa theme, double-click guard, close/reopen.
+PASS: Phase6SmokeRunner.Run and Phase7SmokeRunner.Run regressions (exit 0).
+Screenshot: Phase5WishingWell.png, 720x960; inspected reveal and equipment layout.
+Runtime source search: no ShopCanvas, ShopItemCard or ShopUI references; removed obsolete builder and prefab references.
+Known UnityEditor.Search.SearchDatabase startup indexing exception remains; no C# compiler/package-resolution errors or failed gameplay assertions.
+Santa UI theme only: no world map, live tracker, global service or AI analytics implemented.
+PASS: Phase4SmokeRunner.Run legacy purchase/equip/save compatibility (exit 0).

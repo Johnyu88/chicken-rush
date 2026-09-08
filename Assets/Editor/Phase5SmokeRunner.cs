@@ -1,4 +1,6 @@
 using System;
+using System.Linq;
+using System.Reflection;
 using ChickenRush;
 using UnityEditor;
 using UnityEditor.SceneManagement;
@@ -9,115 +11,138 @@ using Object = UnityEngine.Object;
 [InitializeOnLoad]
 public static class Phase5SmokeRunner
 {
-    private const string Key = "ChickenRush.Tests.Phase5";
-    private static int frames;
-    static Phase5SmokeRunner()
-    {
-        if (SessionState.GetBool(Key, false)) EditorApplication.update += Tick;
-    }
+    const string Key = "ChickenRush.Tests.Phase5";
+    static int frames, stage;
+    static double deadline;
+    static InventoryManager inventory;
+    static WishingWellManager manager;
+    static WishingWellCanvas ui;
+    static MainMenuCanvas menu;
+    static bool atomicObserved;
+    static Phase5SmokeRunner() { if (SessionState.GetBool(Key, false)) EditorApplication.update += Tick; }
     public static void Run()
     {
         MvpSceneBuilder.Build();
-        var manager = Object.FindFirstObjectByType<InventoryManager>();
-        var serialized = new SerializedObject(manager);
-        serialized.FindProperty("playerPrefsKey").stringValue = Key;
-        serialized.ApplyModifiedPropertiesWithoutUndo();
+        Prepare();
+    }
+    public static void RunDeliveredScene()
+    {
+        EditorSceneManager.OpenScene("Assets/Scenes/SampleScene.unity");
+        Prepare();
+    }
+    static void Prepare()
+    {
+        var serialized = new SerializedObject(Object.FindFirstObjectByType<InventoryManager>());
+        serialized.FindProperty("playerPrefsKey").stringValue = Key; serialized.ApplyModifiedPropertiesWithoutUndo();
         EditorSceneManager.SaveScene(UnityEngine.SceneManagement.SceneManager.GetActiveScene());
-        PlayerPrefs.DeleteKey(Key); PlayerPrefs.DeleteKey(Key + ".backup"); PlayerPrefs.Save();
-        SessionState.SetBool(Key, true);
-        EditorApplication.EnterPlaymode();
+        Clear(Key); Clear(Key + ".coins"); Clear(Key + ".legacy");
+        SessionState.SetBool(Key, true); EditorApplication.EnterPlaymode();
     }
-    private static void Check(bool result, string message) { if (!result) throw new Exception(message); }
-    private static ShopItemCard Card(ShopCanvas shop)
+    static void Clear(string key) { PlayerPrefs.DeleteKey(key); PlayerPrefs.DeleteKey(key + ".backup"); PlayerPrefs.Save(); }
+    static void Check(bool value, string reason) { if (!value) throw new Exception(reason); }
+    static void Set(object target, string field, object value) => target.GetType().GetField(field, BindingFlags.Instance | BindingFlags.NonPublic).SetValue(target, value);
+    static InventoryManager LoadInventory(string key)
     {
-        foreach (var card in shop.GetComponentsInChildren<ShopItemCard>())
-            if (card.Item != null) return card;
-        throw new Exception("No visible card");
+        var go = new GameObject("TestInventory"); go.SetActive(false);
+        var result = go.AddComponent<InventoryManager>(); Set(result, "playerPrefsKey", key); go.SetActive(true); return result;
     }
-    private static string Caption(ShopItemCard card) => card.ActionButton.GetComponentInChildren<Text>().text;
-    private static void CaptureShop(MainMenuCanvas menu, ShopCanvas shop)
-    {
-        if (SystemInfo.graphicsDeviceType == UnityEngine.Rendering.GraphicsDeviceType.Null) return;
-        shop.SelectCategory(ItemType.Title);
-        var canvas = menu.GetComponent<Canvas>();
-        var camera = Camera.main;
-        var target = new RenderTexture(720, 960, 24);
-        camera.targetTexture = target;
-        canvas.renderMode = RenderMode.ScreenSpaceCamera;
-        canvas.worldCamera = camera; canvas.planeDistance = 1;
-        Canvas.ForceUpdateCanvases();
-        camera.Render();
-        var previous = RenderTexture.active; RenderTexture.active = target;
-        var image = new Texture2D(720, 960, TextureFormat.RGB24, false);
-        image.ReadPixels(new Rect(0, 0, 720, 960), 0, 0); image.Apply();
-        System.IO.File.WriteAllBytes("Phase5Shop.png", image.EncodeToPNG());
-        RenderTexture.active = previous; camera.targetTexture = null;
-        canvas.renderMode = RenderMode.ScreenSpaceOverlay;
-        Object.Destroy(image); Object.Destroy(target);
-    }
-    private static void Tick()
+    static Button Button(string path) => ui.transform.Find(path).GetComponent<Button>();
+    static void Tick()
     {
         if (!EditorApplication.isPlaying || ++frames < 8) return;
         try
         {
-            var inventory = Object.FindFirstObjectByType<InventoryManager>();
-            var menu = Object.FindFirstObjectByType<MainMenuCanvas>();
-            var shop = menu.GetComponentInChildren<ShopCanvas>(true);
-            Check(shop != null && !shop.gameObject.activeSelf, "Shop should start closed");
-            menu.transform.Find("Menu/ShopButton").GetComponent<Button>().onClick.Invoke();
-            Check(shop.gameObject.activeSelf, "Menu button did not open shop");
-            var card = Card(shop);
-            Check(Caption(card) == "購買", "Unowned caption");
-            card.ActionButton.onClick.Invoke();
-            Check(inventory.Coins == 0 && !inventory.OwnsItem(card.Item), "Insufficient purchase changed inventory");
-            Check(shop.transform.Find("ShopMessage").GetComponent<Text>().text == "金幣不足", "Missing insufficient funds feedback");
-            int currencyEvents = 0;
-            inventory.OnCurrencyChanged += () => currencyEvents++;
-            Check(inventory.AddCoins(2000) && inventory.AddFeathers(17), "Currency grants");
-            Check(currencyEvents == 2 && !inventory.AddFeathers(-1) && !inventory.AddFeathers(int.MaxValue), "Currency event/validation");
-            Check(menu.transform.Find("FeathersLabel").GetComponent<Text>().text.Contains("17"), "Feather UI stale");
-            int price = card.Item.price;
-            card.ActionButton.onClick.Invoke();
-            Check(inventory.Coins == 2000 - price && Caption(card) == "裝備", "Purchase transition/debit");
-            int afterPurchase = currencyEvents;
-            card.ActionButton.onClick.Invoke();
-            Check(Caption(card) == "已裝備" && !card.ActionButton.interactable, "Equip state");
-            Check(currencyEvents == afterPurchase, "Equip emitted currency event");
-            Check(!inventory.BuyItem(card.Item) && inventory.Coins == 2000 - price, "Duplicate debit");
-            var alternate = ScriptableObject.CreateInstance<ItemDataSO>();
-            alternate.itemId = "phase5.alternate"; alternate.itemType = ItemType.Title; alternate.price = 0;
-            Check(inventory.BuyItem(alternate) && inventory.EquipItem(alternate), "Alternative equipment");
-            Check(Caption(card) == "裝備" && card.ActionButton.interactable, "Old equipped card stale");
-            foreach (ItemType type in Enum.GetValues(typeof(ItemType)))
+            if (deadline == 0) deadline = EditorApplication.timeSinceStartup + 25;
+            Check(EditorApplication.timeSinceStartup < deadline, "Wishing smoke timeout at " + stage);
+            if (stage == 0)
             {
-                shop.SelectCategory(type);
-                foreach (var visible in shop.GetComponentsInChildren<ShopItemCard>())
-                    Check(visible.Item.itemType == type, "Wrong category visible");
-                var visibleCard = Card(shop);
-                if (!inventory.OwnsItem(visibleCard.Item)) visibleCard.ActionButton.onClick.Invoke();
-                visibleCard.ActionButton.onClick.Invoke();
-                Check(inventory.GetEquippedItemId(type) == visibleCard.Item.itemId, "Category equip");
+                inventory = Object.FindFirstObjectByType<InventoryManager>();
+                menu = Object.FindFirstObjectByType<MainMenuCanvas>();
+                ui = menu.GetComponentInChildren<WishingWellCanvas>(true); manager = menu.GetComponent<WishingWellManager>();
+                Check(ui != null && !ui.gameObject.activeSelf, "Wish UI must start closed");
+                menu.transform.Find("Menu/WishButton").GetComponent<Button>().onClick.Invoke();
+                Check(ui.gameObject.activeSelf, "Main menu entry");
+                Check(manager.CoinPrice == 100 && manager.FeatherPrice == 10, "Default prices");
+                Button("CoinsWishButton").onClick.Invoke(); stage = 1;
             }
-            shop.transform.Find("Header/CloseButton").GetComponent<Button>().onClick.Invoke();
-            Check(!shop.gameObject.activeSelf, "Close button");
-            inventory.AddFeathers(3); shop.Open();
-            Check(shop.transform.Find("Header/ShopCurrency").GetComponent<Text>().text.Contains("20"), "Reopen currency stale");
-            Check(!Card(shop).ActionButton.interactable, "Reopen equipment stale");
-            var saved = JsonUtility.FromJson<PlayerData>(PlayerPrefs.GetString(Key));
-            Check(saved.feathers == 20 && saved.coins == inventory.Coins, "Currency persistence");
-            var legacy = JsonUtility.FromJson<PlayerData>("{\"coins\":42}"); legacy.Normalize();
-            Check(legacy.feathers == 0 && legacy.coins == 42, "Legacy save migration");
-            CaptureShop(menu, shop);
-            menu.gameObject.SetActive(false);
-            Check(!shop.gameObject.activeSelf, "Shop should close with main menu");
-            Object.Destroy(alternate);
-            Debug.Log("PHASE5_SMOKE_PASS");
-            SessionState.SetBool(Key, false); EditorApplication.Exit(0);
+            else if (stage == 1 && !ui.IsBusy)
+            {
+                Check(ui.LastResult == WishResult.InsufficientCurrency && inventory.Coins == 0 && inventory.OwnedItemIds.Count == 0, "Insufficient wish mutated inventory");
+                Check(ui.Message == "金幣不夠喔！", "Coin feedback");
+                Check(manager.Wish(WishCurrency.Feathers, out _) == WishResult.InsufficientCurrency && inventory.Feathers == 0, "Insufficient feathers");
+                inventory.AddCoins(100); inventory.AddFeathers(10);
+                inventory.OnCurrencyChanged += ObserveAtomic;
+                Button("FeathersWishButton").onClick.Invoke(); Button("CoinsWishButton").onClick.Invoke();
+                Check(ui.IsBusy && !Button("CoinsWishButton").interactable, "Double click guard"); stage = 2;
+            }
+            else if (stage == 2 && !ui.IsBusy)
+            {
+                inventory.OnCurrencyChanged -= ObserveAtomic;
+                var reward = ui.DisplayedItem;
+                Check(ui.LastResult == WishResult.Success && reward != null && reward.itemType == ItemType.Costume, "Costume result");
+                Check(inventory.Feathers == 0 && inventory.Coins == 100 && inventory.OwnsItem(reward) && atomicObserved, "Feather atomic debit/unlock");
+                Check(!inventory.TryUnlockFromWish(reward, 100, 0) && inventory.Coins == 100, "Duplicate transaction debited");
+                Button("RevealPanel/EquipButton").onClick.Invoke();
+                Check(inventory.GetEquippedItemId(ItemType.Costume) == reward.itemId, "Reveal equipment");
+                var reread = LoadInventory(Key);
+                Check(reread.OwnsItem(reward) && reread.Feathers == 0 && reread.Coins == 100 && reread.GetEquippedItemId(ItemType.Costume) == reward.itemId, "Persisted ownership/equipment");
+                Object.Destroy(reread.gameObject);
+                VerifyCoinsAndConfiguration();
+                Capture();
+                var catalog = Resources.LoadAll<ItemDataSO>("Items").Where(x => x != null && x.HasValidId && x.itemType == ItemType.Costume).ToArray();
+                foreach (var item in catalog) if (!inventory.OwnsItem(item)) Check(inventory.TryUnlockFromWish(item, 0, 0), "Collect remainder");
+                int balance = inventory.Coins;
+                Check(manager.Wish(WishCurrency.Coins, out var none) == WishResult.AllCollected && none == null && inventory.Coins == balance, "AllCollected must not charge");
+                manager.SetTheme(WishTheme.Santa); ui.Close(); ui.Open();
+                Check(ui.transform.Find("Title").GetComponent<Text>().text.Contains("Santa"), "Santa UI theme");
+                Button("CoinsWishButton").onClick.Invoke(); stage = 3;
+            }
+            else if (stage == 3 && !ui.IsBusy)
+            {
+                Check(ui.Message == "✨ 目前所有願望都實現了！", "All collected feedback");
+                int coins = inventory.Coins; Button("CoinsWishButton").onClick.Invoke(); ui.Close(); ui.Open();
+                Check(!ui.IsBusy && inventory.Coins == coins && Button("CoinsWishButton").interactable, "Cancel waiting/reopen");
+                menu.gameObject.SetActive(false); Check(!ui.gameObject.activeSelf, "Close with menu");
+                Debug.Log("PHASE5_WISHING_WELL_SMOKE_PASS: UI, atomic currencies, duplicate/all collected, one-item catalog, reload, migration, theme, cancellation");
+                SessionState.SetBool(Key, false); EditorApplication.Exit(0);
+            }
         }
-        catch (Exception ex)
-        {
-            Debug.LogException(ex); SessionState.SetBool(Key, false); EditorApplication.Exit(1);
-        }
+        catch (Exception ex) { Debug.LogException(ex); SessionState.SetBool(Key, false); EditorApplication.Exit(1); }
+    }
+    static void ObserveAtomic()
+    {
+        var saved = JsonUtility.FromJson<PlayerData>(PlayerPrefs.GetString(Key));
+        atomicObserved = inventory.Feathers == 0 && inventory.OwnedItemIds.Count == 1 && saved.feathers == 0 && saved.ownedItemIds.Count == 1;
+    }
+    static void VerifyCoinsAndConfiguration()
+    {
+        var separate = LoadInventory(Key + ".coins"); var wish = separate.gameObject.AddComponent<WishingWellManager>(); wish.Initialize(separate);
+        separate.AddCoins(150); separate.AddFeathers(12);
+        Check(wish.Wish(WishCurrency.Coins, out var prize) == WishResult.Success && separate.Coins == 50 && separate.Feathers == 12 && separate.OwnsItem(prize), "Coin wish independent of single-item feather test");
+        string snapshot = JsonUtility.ToJson(separate.GetSnapshot());
+        Check(wish.Wish((WishCurrency)99, out _) == WishResult.InvalidConfiguration, "Invalid currency");
+        Set(wish, "coinPrice", -1); Check(wish.Wish(WishCurrency.Coins, out _) == WishResult.InvalidConfiguration, "Negative price"); Set(wish, "coinPrice", 100);
+        Check(!separate.TryUnlockFromWish(prize, -1, 0), "Negative transaction cost");
+        var invalid = ScriptableObject.CreateInstance<ItemDataSO>(); invalid.itemType = ItemType.Costume; invalid.itemId = " ";
+        Check(!separate.TryUnlockFromWish(invalid, 1, 0), "Malformed ID"); invalid.itemId = "test.non-costume"; invalid.itemType = ItemType.Title;
+        Check(!separate.TryUnlockFromWish(invalid, 1, 0), "Non-costume grant"); Object.Destroy(invalid);
+        Check(JsonUtility.ToJson(separate.GetSnapshot()) == snapshot, "Invalid config mutated data");
+        var neutral = ScriptableObject.CreateInstance<ItemDataSO>(); neutral.itemId = "test.neutral"; neutral.itemType = ItemType.Costume; neutral.price = -1;
+        Check(!separate.BuyItem(neutral), "Legacy negative price accepted");
+        Check(separate.TryUnlockFromWish(neutral, 0, 0) && separate.EquipItem(neutral), "Wish validity depends on obsolete item price");
+        Object.Destroy(neutral); Object.Destroy(separate.gameObject);
+        PlayerPrefs.SetString(Key + ".legacy", "{\"coins\":42,\"ownedItemIds\":[\"legacy.hat\"],\"equippedCostumeId\":\"legacy.hat\"}"); PlayerPrefs.Save();
+        var legacy = LoadInventory(Key + ".legacy");
+        Check(legacy.Coins == 42 && legacy.Feathers == 0 && legacy.OwnedItemIds.Contains("legacy.hat") && legacy.GetEquippedItemId(ItemType.Costume) == "legacy.hat", "Legacy migration lost inventory"); Object.Destroy(legacy.gameObject);
+    }
+    static void Capture()
+    {
+        if (SystemInfo.graphicsDeviceType == UnityEngine.Rendering.GraphicsDeviceType.Null) return;
+        var canvas = menu.GetComponent<Canvas>(); var camera = Camera.main; var target = new RenderTexture(720, 960, 24);
+        camera.targetTexture = target; canvas.renderMode = RenderMode.ScreenSpaceCamera; canvas.worldCamera = camera; canvas.planeDistance = 1;
+        Canvas.ForceUpdateCanvases(); camera.Render(); var previous = RenderTexture.active; RenderTexture.active = target;
+        var image = new Texture2D(720, 960, TextureFormat.RGB24, false); image.ReadPixels(new Rect(0, 0, 720, 960), 0, 0); image.Apply();
+        System.IO.File.WriteAllBytes("Phase5WishingWell.png", image.EncodeToPNG()); RenderTexture.active = previous; camera.targetTexture = null; canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+        Object.Destroy(image); Object.Destroy(target);
     }
 }
-

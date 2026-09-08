@@ -46,7 +46,7 @@ public static class MvpSceneBuilder
         var sprite = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/TestArt/Square.png");
         BuildExampleItems(sprite);
         Phase7ArtBuilder.ConfigureExampleCostume();
-        Phase5UIBuilder.Build();
+
         EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
         var cameraObject = new GameObject("Main Camera", typeof(Camera), typeof(AudioListener));
         cameraObject.tag = "MainCamera";

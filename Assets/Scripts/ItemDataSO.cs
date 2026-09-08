@@ -12,15 +12,17 @@ namespace ChickenRush
         public string itemId = Guid.NewGuid().ToString("N");
         public string itemName;
         public ItemType itemType;
+        [Tooltip("許願揭曉圖示 / Item Icon")]
         public Sprite icon;
-        [Header("飾品覆蓋：獨立於商店圖示，座標相對小雞美術根節點")]
+        [Header("飾品覆蓋：獨立於Item Icon，座標相對小雞美術根節點")]
         public Sprite costumeSprite;
         public Vector2 costumeOffset = new Vector2(0, .38f);
         public Vector2 costumeScale = new Vector2(.65f, .65f);
         public float costumeRotation;
-        [Min(0)] public int price;
+        [Tooltip("舊 BuyItem 相容價格；許願費用由 WishingWellManager 設定")][Min(0)] public int price;
 
-        public bool IsValid => !string.IsNullOrWhiteSpace(itemId) && itemId == itemId.Trim() &&
-            price >= 0 && Enum.IsDefined(typeof(ItemType), itemType);
+        public bool HasValidId => !string.IsNullOrWhiteSpace(itemId) && itemId == itemId.Trim();
+        public bool IsValid => HasValidId &&
+            Enum.IsDefined(typeof(ItemType), itemType);
     }
 }

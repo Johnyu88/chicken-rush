@@ -3,8 +3,8 @@ using UnityEngine.UI;
 
 namespace ChickenRush
 {
-    // Shared construction helpers for the runtime menu and the editor-built card prefab.
-    public static class ShopUI
+    // Shared construction helpers for runtime menus.
+    public static class RuntimeUI
     {
         public static RectTransform Rect(string name, Transform parent, Vector2 size, Vector2 position)
         {
