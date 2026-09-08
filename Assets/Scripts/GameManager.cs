@@ -59,6 +59,7 @@ namespace ChickenRush
         public GameState State { get; private set; } = GameState.Playing;
         public RescueState Rescue { get; private set; } = RescueState.Available;
         private readonly NestScoreState scoring = new NestScoreState();
+        public InventoryManager Inventory => inventoryManager;
         public int Score => scoring.Score;
         public int Combo => scoring.Combo;
         public NestController ActiveNest { get; private set; }

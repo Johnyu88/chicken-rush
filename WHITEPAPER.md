@@ -1,5 +1,5 @@
 # 🐣《小雞衝衝衝 (Chicken Rush)》遊戲設計與營運白皮書
-**Version:** 1.0.0 (Phase 4 Verified)  
+**Version:** 1.0.0 (Phase 7 Implemented; Isolated Verification)
 **Engine:** Unity 6 (6000.3.23f1)  
 **Architecture:** Data-Driven (ScriptableObject) + Web2.5 Invisible Economy + AI-Led Operations
 
@@ -101,8 +101,9 @@
 * **Phase 2 (Juice & Anger)**：導入 `PhysicsMaterial2D` 彈性、`Pachinko Obstacles` 風車障礙物與 `ChickenAnger` 撞擊變紅膨脹機制。
 * **Phase 3 (Difficulty UI)**：建立 `MainMenuCanvas`，實現「悠閒、地獄、惡魔、變態」四級難度動態切換與傳參。
 * **Phase 4 (Data & Save)**：完成 `ItemDataSO`、`PlayerData` (JSON/PlayerPrefs 本地存檔)、`InventoryManager` 雙幣制管理，數據已 Commit/Push 至 GitHub 倉庫。
-* **Phase 5 (Next Up)**：替換正式 2D Q 彈小雞與雞窩美術資產、串接 Shop UI 與音效震動 (Juice Polish)。
+* **Phase 5 (Shop & Inventory UI)**：**已完成**。完成四類商店分頁、道具卡片購買／裝備狀態，以及金幣／羽毛即時顯示。
 * **Phase 6 (Juice 音效、粒子特效與 Camera Shake)**：**已完成**。完成 SFX／BGM 管理、Combo 遞增音高、進窩羽毛與暴走火花，以及強烈撞擊、滿窩與救援清場的相機震動。
+* **Phase 7 (2D Art & Costume Overlay)**：**已完成**。導入正常／生氣／慶祝小雞貼圖、事件驅動的表情與視覺膨脹、CostumeAnchor 飾品覆蓋，以及雞窩與風車美術；保留既有碰撞體與物理材質設定。Phase 7 功能及 Phase 5／6 回歸測試於隔離套件環境通過，完整原套件組合仍待驗證。
 
 ---
 

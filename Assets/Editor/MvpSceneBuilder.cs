@@ -17,6 +17,7 @@ public static class MvpSceneBuilder
 
     public static void Build()
     {
+        Phase7ArtBuilder.ImportArt();
         Directory.CreateDirectory("Assets/Scenes");
         Directory.CreateDirectory("Assets/Prefabs");
         Directory.CreateDirectory("Assets/TestArt");
@@ -44,6 +45,7 @@ public static class MvpSceneBuilder
         importer.SaveAndReimport();
         var sprite = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/TestArt/Square.png");
         BuildExampleItems(sprite);
+        Phase7ArtBuilder.ConfigureExampleCostume();
         Phase5UIBuilder.Build();
         EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
         var cameraObject = new GameObject("Main Camera", typeof(Camera), typeof(AudioListener));
@@ -66,6 +68,7 @@ public static class MvpSceneBuilder
         chicken.GetComponent<Rigidbody2D>().sharedMaterial = chickenMaterial;
         chicken.GetComponent<CircleCollider2D>().sharedMaterial = chickenMaterial;
         chicken.AddComponent<ChickenAnger>();
+        Phase7ArtBuilder.ConfigureChicken(chicken);
         var chickenPrefab = PrefabUtility.SaveAsPrefabAsset(chicken, "Assets/Prefabs/Chicken.prefab").GetComponent<ChickenController>();
         Object.DestroyImmediate(chicken);
 
@@ -81,6 +84,7 @@ public static class MvpSceneBuilder
         sensor.GetComponent<BoxCollider2D>().size = new Vector2(7, 0.6f);
         sensor.GetComponent<BoxCollider2D>().isTrigger = true;
         Set(sensor.GetComponent<NestSensor>(), "nest", nest.GetComponent<NestController>());
+        Phase7ArtBuilder.ConfigureNest(nest);
         var nestPrefab = PrefabUtility.SaveAsPrefabAsset(nest, "Assets/Prefabs/Nest.prefab").GetComponent<NestController>();
         Object.DestroyImmediate(nest);
 
@@ -119,7 +123,7 @@ public static class MvpSceneBuilder
         Set(difficulty, "gameManager", manager);
         Set(difficulty, "spawner", spawner);
         Set(difficulty, "mainMenuCanvas", menu.gameObject);
-        Set(difficulty, "obstacleSprite", BuildObstacleSprite());
+        Set(difficulty, "obstacleSprite", Resources.Load<Sprite>("Art/Windmill"));
         Set(menu, "difficultyManager", difficulty);
         Set(menu, "inventoryManager", inventory);
         var ui = new GameObject("RescueUI", typeof(RescueMockUI)).GetComponent<RescueMockUI>();

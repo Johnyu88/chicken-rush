@@ -28,7 +28,16 @@ namespace ChickenRush
                 obstacle.transform.position = new Vector3(i % 2 == 0 ? -0.65f : 0.65f, 2f - 1.6f * i, 0f);
                 obstacle.transform.localScale = Vector3.one * 1.1f;
                 var visual = obstacle.GetComponent<SpriteRenderer>();
+                var windmill = Resources.Load<Sprite>("Art/Windmill");
                 visual.sprite = obstacleSprite;
+                if (windmill != null)
+                {
+                    visual.enabled = false;
+                    var rotor = new GameObject("WindmillRotor", typeof(SpriteRenderer), typeof(WindmillVisual));
+                    rotor.transform.SetParent(obstacle.transform, false);
+                    rotor.GetComponent<SpriteRenderer>().sprite = windmill;
+                    rotor.GetComponent<WindmillVisual>().degreesPerSecond = i % 2 == 0 ? 55 : -55;
+                }
                 visual.color = new Color(0.35f, 0.7f, 1f);
                 var collider = obstacle.GetComponent<CircleCollider2D>();
                 collider.radius = 31f / 64f;

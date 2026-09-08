@@ -1,0 +1,9 @@
+Phase 7 verification
+Unity 6000.3.23f1, isolated built-in modules + uGUI 2.0.0 project.
+PASS: Phase7SmokeRunner.Run (normal/angry/happy, costume at spawn and live refresh, missing costume data, one anger event, visual pulse restoration, nest and windmill art, full nest celebration, score).
+PASS: Phase7SmokeRunner.VerifyMigration (original Chicken and Nest prefab collider sizes, offsets, triggers, root scale and physics material references preserved).
+PASS: Phase6SmokeRunner.Run; Phase5SmokeRunner.Run.
+Inspected: Phase7Characters.png and Phase7Scene.png. Six generated PNGs have transparent alpha; character variants share 1254 x 1254 dimensions.
+Original SampleScene.unity preserved (SHA256 8F5EA5E7FC5E1A84F7A8E8498F688FA88069982F263F62BFCFC4AF6CC6B7588E).
+Existing Unity Editor SearchDatabase indexing exception remains in smoke-test logs; no game-script exceptions. Full original package graph remains unverified due to existing version mismatch.
+PASS: Phase7SmokeRunner.ValidateDeliveredAssets after remapping to local Unity script GUIDs; delivered prefab, body, costume anchor, nest and hat references resolve.

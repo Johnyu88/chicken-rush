@@ -23,6 +23,8 @@ namespace ChickenRush
         {
             gameManager = manager;
             gameManager.RegisterChicken(this);
+            var costume = GetComponent<ChickenCostumeApplier>();
+            if (costume != null) costume.Initialize(manager.Inventory);
             body.AddForce(initialImpulse, ForceMode2D.Impulse);
         }
 

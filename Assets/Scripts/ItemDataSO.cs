@@ -13,6 +13,11 @@ namespace ChickenRush
         public string itemName;
         public ItemType itemType;
         public Sprite icon;
+        [Header("飾品覆蓋：獨立於商店圖示，座標相對小雞美術根節點")]
+        public Sprite costumeSprite;
+        public Vector2 costumeOffset = new Vector2(0, .38f);
+        public Vector2 costumeScale = new Vector2(.65f, .65f);
+        public float costumeRotation;
         [Min(0)] public int price;
 
         public bool IsValid => !string.IsNullOrWhiteSpace(itemId) && itemId == itemId.Trim() &&

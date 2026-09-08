@@ -11,6 +11,7 @@ namespace ChickenRush
     {
         [SerializeField] private string playerPrefsKey = "ChickenRush.PlayerData.v1";
         private PlayerData data;
+        private ItemDataSO[] itemCatalog;
         public event Action Changed;
         public event Action OnCurrencyChanged;
         public int Feathers { get { EnsureLoaded(); return data.feathers; } }
@@ -19,6 +20,15 @@ namespace ChickenRush
         public IReadOnlyList<string> OwnedItemIds { get { EnsureLoaded(); return data.ownedItemIds.AsReadOnly(); } }
         public PlayerData GetSnapshot() { EnsureLoaded(); return data.Copy(); }
         public string GetEquippedItemId(ItemType type) { EnsureLoaded(); return data.GetEquippedItemId(type); }
+        public ItemDataSO GetEquippedItem(ItemType type)
+        {
+            string id = GetEquippedItemId(type);
+            if (string.IsNullOrEmpty(id)) return null;
+            if (itemCatalog == null) itemCatalog = Resources.LoadAll<ItemDataSO>("Items");
+            foreach (var item in itemCatalog)
+                if (item != null && item.IsValid && item.itemType == type && item.itemId == id && OwnsItem(item)) return item;
+            return null; // Deleted or unresolvable assets never become a visible costume.
+        }
         private void Awake() { EnsureLoaded(); }
 
         private void EnsureLoaded()

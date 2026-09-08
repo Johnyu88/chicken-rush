@@ -15,5 +15,9 @@ MonoBehaviour:
   itemId: costume.yellow_hat
   itemName: "\u9EC3\u8272\u5C0F\u5E3D"
   itemType: 1
-  icon: {fileID: 7482667652216324306, guid: c57f4bd6add5f624795de5951745e6f5, type: 3}
+  icon: {fileID: 21300000, guid: c7ebe7c96c6b41b4481e33d74f8108cc, type: 3}
+  costumeSprite: {fileID: 21300000, guid: c7ebe7c96c6b41b4481e33d74f8108cc, type: 3}
+  costumeOffset: {x: 0, y: 0.36}
+  costumeScale: {x: 0.65, y: 0.65}
+  costumeRotation: 0
   price: 100

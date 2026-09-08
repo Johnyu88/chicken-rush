@@ -68,6 +68,7 @@ namespace ChickenRush
             if (IsFull)
             {
                 IsLeaving = true; // 先上鎖再派發事件，防止同一物理幀超收或重複完成。
+                foreach (var visual in GetComponentsInChildren<ChickenVisual>()) visual.Celebrate();
                 gameManager.BeginNestCompletion(this);
             }
             onChickenAccepted.Invoke();
