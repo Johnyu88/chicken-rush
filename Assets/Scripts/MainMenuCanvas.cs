@@ -19,6 +19,7 @@ namespace ChickenRush
         private Text coinsLabel;
         private Text feathersLabel;
         private WishingWellCanvas wishingWell;
+        private MyNestCanvas myNest;
 
         private void Awake()
         {
@@ -80,8 +81,12 @@ namespace ChickenRush
             wishManager.Initialize(inventoryManager);
             wishingWell.Initialize(inventoryManager, wishManager, runtimeFont, penguinPortrait);
             wishingWellButton.onClick.AddListener(wishingWell.Open);
+            var homeObject = new GameObject("MyNestCanvas", typeof(RectTransform));
+            homeObject.SetActive(false); homeObject.transform.SetParent(transform, false);
+            myNest = homeObject.AddComponent<MyNestCanvas>(); myNest.Initialize(inventoryManager, runtimeFont);
+            RuntimeUI.Button("MyNestButton", panel, runtimeFont, "🏡 我的雞窩", new Vector2(500, 66), new Vector2(0, -392)).onClick.AddListener(myNest.Open);
             Label("Hint", panel, "按住螢幕落雞 · 左右拖動調整方向", 23,
-                new Vector2(0, -382), new Vector2(600, 55), new Color(0.7f, 0.8f, 0.87f));
+                new Vector2(0, -451), new Vector2(600, 55), new Color(0.7f, 0.8f, 0.87f));
         }
 
         private static RectTransform Element(string name, Transform parent, Vector2 size, Vector2 position)
@@ -110,6 +115,7 @@ namespace ChickenRush
         private void OnDisable()
         {
             if (wishingWell != null) wishingWell.Close();
+            if (myNest != null) myNest.Close();
             if (inventoryManager != null) inventoryManager.OnCurrencyChanged -= RefreshCoins;
         }
 

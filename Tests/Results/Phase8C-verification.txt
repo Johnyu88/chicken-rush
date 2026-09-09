@@ -1,0 +1,9 @@
+Phase 8C My Nest Foundation verification
+Unity 6000.3.23f1; isolated copy uses the full project Packages manifest/lock.
+RED: HOME_DATA_MISSING on previous code, exit 1.
+PASS: Phase8CSmokeRunner.Run, exit 0 (PHASE8C_SMOKE_PASS).
+Checks: legacy home-less save and duplicate ownership migration; My Nest open/back/close with menu; live ownership summary; furniture itemId-only save and reload with position/rotation/scale; owned Butler selection; unowned/unknown/wrong-type/invalid-transform rejection; defensive deep copies; duplicate placement replaces rather than grants; absent or populated 3D representation leaves ownership unchanged; unknown IDs and reserved decoration/exterior fields survive unrelated commits and reload.
+Screenshot: Phase8CMyNest.png (720x960), visually inspected.
+No actual 3D rendering, models, placement UI, new scene, network account, LLM or global event implementation.
+Known UnityEditor.Search.SearchDatabase startup indexing exception remains; gameplay assertions pass.
+PASS: Phase5SmokeRunner.Run (including Phase 8A and 8B-1), Phase6SmokeRunner.Run, Phase7SmokeRunner.Run, Phase4SmokeRunner.Run; all exit 0.

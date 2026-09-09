@@ -6,6 +6,7 @@ namespace ChickenRush
     [Serializable]
     public sealed class PlayerData
     {
+        public HomeNestData homeNest = new HomeNestData();
         public int coins;
         public int feathers;
         public List<string> ownedItemIds = new List<string>();
@@ -17,6 +18,8 @@ namespace ChickenRush
         // Old/partial JSON can omit lists and slots. Keep valid ownership, remove malformed entries.
         public void Normalize()
         {
+            if (homeNest == null) homeNest = new HomeNestData();
+            homeNest.Normalize();
             coins = Math.Max(0, coins);
             feathers = Math.Max(0, feathers);
             if (ownedItemIds == null) ownedItemIds = new List<string>();
@@ -56,6 +59,7 @@ namespace ChickenRush
 
         public PlayerData Copy() => new PlayerData
         {
+            homeNest = homeNest != null ? homeNest.Copy() : new HomeNestData(),
             coins = coins, feathers = feathers, ownedItemIds = new List<string>(ownedItemIds),
             equippedTitleId = equippedTitleId, equippedCostumeId = equippedCostumeId,
             equippedFurnitureId = equippedFurnitureId, equippedButlerId = equippedButlerId

@@ -1,9 +1,9 @@
 # 🐣《小雞衝衝衝 (Chicken Rush)》遊戲設計與營運白皮書
-**Version:** 1.4.0 (Personal Chicken Nest Design; Phase 8B-1 Implemented)
+**Version:** 1.5.0 (Phase 8C My Nest Foundation)
 **Engine:** Unity 6 (6000.3.23f1)  
 **Architecture:** Data-Driven (ScriptableObject) + Web2.5 Invisible Economy + AI-Led Operations
 
-> **文件狀態說明**：「已完成」以第 6 章 Phase 1～8B-1 的交付紀錄為準；「已規劃」表示已納入設計，「未實作」表示尚無對應執行功能。本文經濟擴充、AI 營運與全球活動願景不代表已上線。Phase 8A 已將 Phase 5 玩家入口改為本地許願；Phase 8B-1 已加入規則式企鵝 NPC。全球活動、真正 LLM 與 AI 分析仍屬規劃。
+> **文件狀態說明**：「已完成」以第 6 章 Phase 1～8C 的交付紀錄為準；「已規劃」表示已納入設計，「未實作」表示尚無對應執行功能。本文經濟擴充、AI 營運與全球活動願景不代表已上線。Phase 8A 已將 Phase 5 玩家入口改為本地許願；Phase 8B-1 已加入規則式企鵝 NPC。全球活動、真正 LLM 與 AI 分析仍屬規劃。
 
 ---
 
@@ -226,9 +226,10 @@ AI Agent 結合以上訊號判斷哪些虛擬造型值得轉成**實體玩具、
 | Global Live Event Framework 與季節換皮 | 已規劃，見第 4.5 節 | 未實作 |
 | Phase 8B-1：企鵝 NPC 基礎互動與規則式台詞 | 見第 4.3 節；Smoke Test 通過 | 已完成 |
 | 真正 LLM／Phase 8B-2、幕後 AI 營運及 O2O 需求診斷 | 已規劃，見第 5 章 | 未實作 |
-| Personal 3D Home Nest、3D Furniture Placement、2D／3D Shared Representation | 已規劃，見第 8 章 | 未實作 |
+| Phase 8C My Nest Foundation：入口、資料模型、存檔與共用參照骨架 | 見第 8 章；Smoke Test 通過 | 已完成 |
+| 真正 3D Home Nest、3D Furniture Placement UI、3D Models | 已規劃，見第 8 章 | 未實作 |
 
-Phase 8A 交付本地許願交易與 UI Theme；Phase 8B-1 已補上規則式企鵝 NPC 與訊息來源介面。本次僅更新 Personal Chicken Nest 設計文件。Santa Live Journey／Global Live Event 為已規劃／未實作，不包含世界地圖、Santa Tracker 介接、全球後端或 AI Agent 執行服務。未新增貨幣系統。
+Phase 8A 交付本地許願交易與 UI Theme；Phase 8B-1 已補上規則式企鵝 NPC 與訊息來源介面。本次 Phase 8C 完成 My Nest 入口、個人家園資料及本地存檔骨架。Santa Live Journey／Global Live Event 為已規劃／未實作，不包含世界地圖、Santa Tracker 介接、全球後端或 AI Agent 執行服務。未新增貨幣系統。
 
 ---
 
@@ -241,7 +242,7 @@ Phase 8A 交付本地許願交易與 UI Theme；Phase 8B-1 已補上規則式企
 
 ## 8. Personal Chicken Nest / My Nest
 
-**個人雞窩家園系統｜已規劃／未實作**
+**個人雞窩家園系統｜Phase 8C Foundation 已完成；真正 3D 家園已規劃／未實作**
 
 核心定位：**每一個玩家帳號都擁有一個自己的雞窩家園。** 這是未來帳號家園設計；目前仍以既有本地 PlayerData／InventoryManager 存檔為基礎，尚未實作帳號綁定家園、雲端同步或 3D 家園。
 
@@ -268,7 +269,7 @@ Phase 8A 交付本地許願交易與 UI Theme；Phase 8B-1 已補上規則式企
 
 共同 Item ID 是所有權依據，2D 穿戴、3D 顯示與圖示都是該資產的不同表現，不要求重複解鎖。家園擺放位置／旋轉等配置資料與 ownership 分開保存；配置引用同一 ID，不另發一份資產。缺少 3D Representation 時保留既有所有權及 2D 使用能力，在家園標示尚不支援，不因未有模型而扣款或重新許願。
 
-目前 ItemDataSO 已有 icon 與 Costume Sprite／Overlay 欄位；3D Model／Mesh 引用、Representation 對應與家園配置存檔屬未來資料模型擴充。本次不修改 ItemDataSO、ItemType、PlayerData 或任何程式。
+目前 ItemDataSO 保留 icon 與 Costume Sprite／Overlay，Phase 8C 新增可為空的 model3DPrefab 參照；尚無模型不影響有效性或所有權。本地家園配置存檔骨架已完成；真正 3D 模型、呈現及擺放 UI 仍未實作，ItemType 未擴充。
 
 ### 8.3 資產分類與擴充界線
 
@@ -298,7 +299,21 @@ Phase 8A 交付本地許願交易與 UI Theme；Phase 8B-1 已補上規則式企
 | Wishing Well | **已完成**；目前為本地 Costume 許願。 |
 | Penguin Butler Agent NPC 基礎版 | **已完成**；許願池規則式互動，非真正 LLM。 |
 | Personal 3D Home Nest | **已規劃／未實作**。 |
-| 3D Furniture Placement | **已規劃／未實作**。 |
-| 2D／3D Shared Representation | **已規劃／未實作**。 |
+| 3D Furniture Placement UI | **已規劃／未實作**；僅資料驗證／存檔 API 已完成。 |
+| 2D／3D Shared Representation | 共用 itemId 與可空 3D 參照骨架已完成；3D 呈現 **已規劃／未實作**。 |
+| 3D Models | **未實作**。 |
+| Phase 8C My Nest Foundation | **已完成**；入口、摘要、資料與存檔安全測試通過。 |
 
-本次僅更新 WHITEPAPER.md，未實作 3D 程式、未新增 Scene、未下載素材。真正 LLM、Santa Live Journey 與 Global Live Event 維持已規劃／未實作；本文件更新不改變 Phase 1～8B-1 的程式交付狀態。
+本次 Phase 8C 未新增 Scene、3D 模型、家具拖曳或素材。真正 3D Home Nest、3D Furniture Placement UI、Santa Live Journey、Global Live Event、LLM 與雲端帳號仍未實作。
+
+### 8.6 Phase 8C：My Nest Foundation（已完成）
+
+主選單新增「🏡 我的雞窩」，開啟 runtime MyNestCanvas，顯示已擁有的 Costume／Furniture／Butler 數量、家園版本、有效家具紀錄及啟用管家，並可返回主選單。此畫面只有資產摘要，沒有 3D 擺放操作。
+
+每份 PlayerData 內嵌一份 HomeNestData：version、placedFurniture、activeButlerId，以及預留的 exteriorItemId／decorations。PlacedHomeItemData 僅保存 itemId、position、Euler rotation 與 scale，不序列化完整 ItemDataSO。舊存檔缺少 homeNest 時建立空家園，原貨幣、所有權與裝備槽保持相容。
+
+InventoryManager.TryPlaceHomeFurniture 驗證現有資產為已擁有 Furniture、位置／旋轉為有限值、scale 為正數及家園版本受支援，再透過深拷貝與同一 Commit 保存。每個 itemId 目前最多一筆家具紀錄，重放只更新配置，不增加 ownership 或扣款。TrySetHomeButler 只接受已擁有的 Butler，空字串可清除；不新增管家或任何道具。
+
+載入時保留無法解析的 ID 與未來 Exterior／Decoration 資料，以便恢復；GetActiveHomeFurniture／GetActiveHomeButler 僅回傳仍可解析且具所有權的有效配置，不讓未知或未擁有資產生效。回傳資料為深拷貝，不可藉修改快照繞過交易。未支援的家園版本不允許新增配置。Exterior／Decoration 欄位僅預留，未加入 ItemType 或操作功能。
+
+驗證涵蓋舊存檔 migration、UI 開關、家園存檔重讀、未知 ID 恢復保留、未擁有／錯誤類型／非法 Transform 拒絕，以及同一資產 2D／3D 參照不重複所有權。

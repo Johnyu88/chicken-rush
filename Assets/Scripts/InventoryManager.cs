@@ -107,6 +107,54 @@ namespace ChickenRush
             return Commit(next);
         }
 
+        // Home configuration references existing ownership; it never grants assets.
+        private ItemDataSO ResolveOwnedHomeItem(string id, ItemType type)
+        {
+            EnsureLoaded();
+            if (string.IsNullOrWhiteSpace(id) || !data.ownedItemIds.Contains(id)) return null;
+            ItemDataSO found = null;
+            foreach (var item in Resources.LoadAll<ItemDataSO>("Items"))
+            {
+                if (item == null || item.itemId != id) continue;
+                if (found != null || !item.IsValid || item.itemType != type) return null;
+                found = item;
+            }
+            return found;
+        }
+        public IReadOnlyList<PlacedHomeItemData> GetActiveHomeFurniture()
+        {
+            EnsureLoaded();
+            var active = new List<PlacedHomeItemData>(); var seen = new HashSet<string>();
+            if (data.homeNest.version != HomeNestData.CurrentVersion) return active.AsReadOnly();
+            foreach (var item in data.homeNest.placedFurniture)
+                if (item.IsValid && ResolveOwnedHomeItem(item.itemId, ItemType.Furniture) != null && seen.Add(item.itemId)) active.Add(item.Copy());
+            return active.AsReadOnly();
+        }
+        public ItemDataSO GetActiveHomeButler()
+        {
+            EnsureLoaded();
+            return data.homeNest.version == HomeNestData.CurrentVersion ? ResolveOwnedHomeItem(data.homeNest.activeButlerId, ItemType.Butler) : null;
+        }
+        public bool TryPlaceHomeFurniture(PlacedHomeItemData placement)
+        {
+            EnsureLoaded();
+            if (placement == null || !placement.IsValid || data.homeNest.version != HomeNestData.CurrentVersion ||
+                ResolveOwnedHomeItem(placement.itemId, ItemType.Furniture) == null) return false;
+            var next = data.Copy();
+            // One placement per owned ID until a future explicit quantity model exists.
+            next.homeNest.placedFurniture.RemoveAll(item => item.itemId == placement.itemId);
+            next.homeNest.placedFurniture.Add(placement.Copy());
+            return Commit(next);
+        }
+        public bool TrySetHomeButler(string itemId)
+        {
+            EnsureLoaded();
+            if (data.homeNest.version != HomeNestData.CurrentVersion || itemId == null ||
+                (itemId.Length > 0 && ResolveOwnedHomeItem(itemId, ItemType.Butler) == null)) return false;
+            var next = data.Copy(); next.homeNest.activeButlerId = itemId;
+            return Commit(next);
+        }
+
         private bool Commit(PlayerData next)
         {
             string previous = JsonUtility.ToJson(data);

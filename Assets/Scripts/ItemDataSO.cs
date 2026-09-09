@@ -14,6 +14,8 @@ namespace ChickenRush
         public ItemType itemType;
         [Tooltip("許願揭曉圖示 / Item Icon")]
         public Sprite icon;
+        [Tooltip("未來 3D Representation，可為空；與 2D 共用 itemId 所有權")]
+        public GameObject model3DPrefab;
         [Header("飾品覆蓋：獨立於Item Icon，座標相對小雞美術根節點")]
         public Sprite costumeSprite;
         public Vector2 costumeOffset = new Vector2(0, .38f);
