@@ -10,6 +10,8 @@ namespace ChickenRush
     public sealed class InventoryManager : MonoBehaviour
     {
         [SerializeField] private string playerPrefsKey = "ChickenRush.PlayerData.v1";
+        [SerializeField, Min(1)] private int homeFurnitureLimit = 24;
+        public int HomeFurnitureLimit => Mathf.Max(1, homeFurnitureLimit);
         private PlayerData data;
         private ItemDataSO[] itemCatalog;
         public event Action Changed;
@@ -155,6 +157,17 @@ namespace ChickenRush
             return Commit(next);
         }
 
+        public bool IsOwnedFurniture(string id) => ResolveOwnedHomeItem(id, ItemType.Furniture) != null;
+
+        // Revalidate the same commands against current ownership and reject stale home sessions.
+        internal bool TryCommitFurnitureCommands(string expectedHome, IReadOnlyList<PlacementCommand> commands)
+        {
+            EnsureLoaded();
+            if (expectedHome != JsonUtility.ToJson(data.homeNest) || commands == null || commands.Count == 0 ||
+                !PlacementRules.TryApply(data.homeNest, commands, IsOwnedFurniture, HomeFurnitureLimit, out var home)) return false;
+            var next = data.Copy(); next.homeNest = home;
+            return Commit(next);
+        }
         private bool Commit(PlayerData next)
         {
             string previous = JsonUtility.ToJson(data);

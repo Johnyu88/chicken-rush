@@ -1,9 +1,9 @@
 # 🐣《小雞衝衝衝 (Chicken Rush)》遊戲設計與營運白皮書
-**Version:** 1.7.0 (Phase 8E 3D My Nest Prototype)
+**Version:** 1.8.0 (Phase 8F Furniture Editor & Mobile Interaction Foundation)
 **Engine:** Unity 6 (6000.3.23f1)  
 **Architecture:** Data-Driven (ScriptableObject) + Web2.5 Invisible Economy + AI-Led Operations
 
-> **文件狀態說明**：「已完成」以第 6 章 Phase 1～8E 的交付紀錄為準；「已規劃」表示已納入設計，「未實作」表示尚無對應執行功能。本文經濟擴充、AI 營運與全球活動願景不代表已上線。Phase 8A 已將 Phase 5 玩家入口改為本地許願；Phase 8B-1 已加入規則式企鵝 NPC。全球活動、真正 LLM 與 AI 分析仍屬規劃。
+> **文件狀態說明**：「已完成」以第 6 章 Phase 1～8F 的交付紀錄為準；「已規劃」表示已納入設計，「未實作」表示尚無對應執行功能。本文經濟擴充、AI 營運與全球活動願景不代表已上線。Phase 8A 已將 Phase 5 玩家入口改為本地許願；Phase 8B-1 已加入規則式企鵝 NPC。全球活動、真正 LLM 與 AI 分析仍屬規劃。
 
 ---
 
@@ -228,10 +228,11 @@ AI Agent 結合以上訊號判斷哪些虛擬造型值得轉成**實體玩具、
 | 真正 LLM／Phase 8B-2、幕後 AI 營運及 O2O 需求診斷 | 已規劃，見第 5 章 | 未實作 |
 | Phase 8C My Nest Foundation：入口、資料模型、存檔與共用參照骨架 | 見第 8 章；Smoke Test 通過 | 已完成 |
 | Phase 8E：3D My Nest Prototype、Camera、placeholder、Furniture Placement 與 persistence | 見第 8.7 節；Unity Smoke Test 通過 | 已完成（MVP） |
-| 正式 3D 美術、完整 Furniture library 與完整 Touch UX | 已規劃，見第 8 章 | 未實作 |
+| Phase 8F：Furniture Editor、owned Furniture Inventory、Commands、Preview／Confirm 與輸入基礎 | 見第 8.8 節；Unity Smoke Test 通過 | 已完成 |
+| 正式 3D 美術、完整家具素材庫與完整 Touch UX | 已規劃，見第 8 章 | 未實作 |
 | Phase 8D Asset Ledger & AI Asset Operations Architecture | 已規劃，設計文件見第 9 章 | Server Ledger／AI Service／Adapter／Contract／Wallet／Redeem Ledger 未實作 |
 
-Phase 8A 交付本地許願交易與 UI Theme；Phase 8B-1 已補上規則式企鵝 NPC 與訊息來源介面。Phase 8C 已完成 My Nest 入口、個人家園資料及本地存檔骨架；Phase 8D 交付第 9 章架構設計；Phase 8E 已完成本地 3D 家園原型與家具擺放存檔。Santa Live Journey／Global Live Event 為已規劃／未實作，不包含世界地圖、Santa Tracker 介接、全球後端或 AI Agent 執行服務。未新增貨幣系統。
+Phase 8A 交付本地許願交易與 UI Theme；Phase 8B-1 已補上規則式企鵝 NPC 與訊息來源介面。Phase 8C 已完成 My Nest 入口、個人家園資料及本地存檔骨架；Phase 8D 交付第 9 章架構設計；Phase 8E 已完成本地 3D 家園原型與家具擺放存檔；Phase 8F 已升級為共用命令的家具編輯器。Santa Live Journey／Global Live Event 為已規劃／未實作，不包含世界地圖、Santa Tracker 介接、全球後端或 AI Agent 執行服務。未新增貨幣系統。
 
 ---
 
@@ -244,7 +245,7 @@ Phase 8A 交付本地許願交易與 UI Theme；Phase 8B-1 已補上規則式企
 
 ## 8. Personal Chicken Nest / My Nest
 
-**個人雞窩家園系統｜Phase 8C Foundation 與 Phase 8E 3D Prototype 已完成**
+**個人雞窩家園系統｜Phase 8C Foundation、Phase 8E 3D Prototype 與 Phase 8F Furniture Editor 已完成**
 
 核心定位：**每一個玩家帳號都擁有一個自己的雞窩家園。** 這是未來帳號家園設計；目前仍以既有本地 PlayerData／InventoryManager 存檔為基礎，已有本地 3D 家園 MVP，尚未實作帳號綁定家園或雲端同步。
 
@@ -278,7 +279,7 @@ Phase 8A 交付本地許願交易與 UI Theme；Phase 8B-1 已補上規則式企
 | 分類 | 統一資產定位 | 現有資料模型／後續界線 |
 | :--- | :--- | :--- |
 | **Costume** | 小雞穿戴，2D／3D 共用所有權。 | 現有 ItemType；2D Overlay 已完成，3D 穿戴待實作。 |
-| **Furniture** | 3D 家園家具、燈具等可擺放物件。 | 現有 ItemType；Phase 8E 已完成基本 3D 選擇、擺放、移動、旋轉與儲存。 |
+| **Furniture** | 3D 家園家具、燈具等可擺放物件。 | 現有 ItemType；Phase 8F 支援家具庫、選擇、擺放、移動、旋轉、收回及 Preview／Confirm。 |
 | **Exterior** | 雞窩外觀、建築造型。 | 未來 ItemType／資料模型擴充，目前 enum 未包含。 |
 | **Decoration** | 節慶與裝飾物，可包含牆面、地板等裝飾配置。 | 未來 ItemType／資料模型擴充，目前 enum 未包含。 |
 | **Butler** | AI 管家／NPC。 | 現有 ItemType；許願池規則式企鵝 NPC 與家園基本呈現已完成；基礎企鵝嚮導不授予 Butler 道具所有權，管家道具解鎖 UX 仍待規劃。 |
@@ -301,7 +302,7 @@ Phase 8A 交付本地許願交易與 UI Theme；Phase 8B-1 已補上規則式企
 | Wishing Well | **已完成**；目前為本地 Costume 許願。 |
 | Penguin Butler Agent NPC 基礎版 | **已完成**；許願池規則式互動，非真正 LLM。 |
 | Personal 3D Home Nest | **Phase 8E MVP 已完成**；本地 runtime 3D 房間。 |
-| 3D Furniture Placement UI | **MVP 已完成**；選擇已擁有家具、點擊／拖曳地板、旋轉、儲存與重入還原。 |
+| 3D Furniture Placement UI | **Phase 8F 編輯器已完成**；owned 家具庫、選取、拖曳、旋轉、收回、Undo、Cancel 與 Confirm。 |
 | 2D／3D Shared Representation | 共用 itemId、可空 3D 參照及 Furniture／Butler 呈現已完成；Costume 3D 穿戴仍未實作。 |
 | 正式 3D Models | **未實作**；目前僅 primitive placeholder。 |
 | Phase 8C My Nest Foundation | **已完成**；入口、摘要、資料與存檔安全測試通過。 |
@@ -322,23 +323,42 @@ InventoryManager.TryPlaceHomeFurniture 驗證現有資產為已擁有 Furniture�
 
 ---
 
-### 8.7 Phase 8E：3D My Nest Prototype（已完成）
+### 8.7 Phase 8E：3D My Nest Prototype（已完成，以下為當時交付）
 
 主選單 →「🏡 我的雞窩」→ 3D 房間 → 選擇已擁有 Furniture → 點擊／拖曳地板移動 → 旋轉 → 儲存 → 離開 → 再進入，位置與 rotation 保持不變。沿用 HomeNestData／PlacedHomeItemData 與 InventoryManager.TryPlaceHomeFurniture，不新增存檔或 ownership 系統。
 
 - **環境與角色**：HomeNestPrototype 建立地板、三面牆、單一無陰影方向光及獨立 RenderTexture Camera；MyNestCanvas 顯示 3D 視窗。小雞、企鵝與缺少模型的家具採輕量 primitive，非正式 3D 美術。企鵝提示「歡迎回家」，不執行 LLM 或資產交易；基本嚮導不等於玩家已擁有 Butler 道具。
 - **視角與操作**：大按鈕提供左右轉動、Zoom、家具切換、45° 旋轉與儲存；視角限制為左右 55°、固定俯角 35°、距離 9～14，避免翻轉或穿過房間牆面。HomeNestPointerInput 使用 Pointer Event，支援滑鼠點擊／拖曳與滾輪，保留 Touch EventSystem 接入方式；完整手機手勢尚未完成。
 - **資產呈現**：Furniture 與已啟用 Butler 優先使用 ItemDataSO.model3DPrefab，模型縮放至原型尺寸；缺少時使用可替換 placeholder。保留現有 2D Sprite／Costume Overlay，不新增第二份所有權。家園內的小雞僅展示 placeholder，不代表已完成個別小雞收藏、活動 AI 或 Costume 3D 穿戴。
-- **資料安全與儲存**：選單只列出 Resources/Items 中有效、ID 唯一且已擁有的 Furniture。選取／移動僅改預覽；儲存時再次透過 InventoryManager 驗證所有權及原子 Commit。切換家具或離開會放棄未儲存預覽，不扣款、不發道具；每個 itemId 最多一筆配置。家具上限欄位預設 24 件；MVP 限定地板區域 x ±3、z ±2.5、y=0、水平 rotation 與單位 scale。未知 ID、超出此原型範圍及未支援 transform 的舊記錄保留於原存檔，載入顯示安全跳過；明確選取並儲存才更新該 ID。
+- **資料安全與儲存**：選單只列出 Resources/Items 中有效、ID 唯一且已擁有的 Furniture。選取／移動僅改預覽；儲存時再次透過 InventoryManager 驗證所有權及原子 Commit。切換家具或離開會放棄未儲存預覽，不扣款、不發道具；每個 itemId 最多一筆配置。家具上限預設 24 件（Phase 8F 集中到 InventoryManager）；MVP 限定地板區域 x ±3、z ±2.5、y=0、水平 rotation 與單位 scale。未知 ID、超出此原型範圍及未支援 transform 的舊記錄保留於原存檔，載入顯示安全跳過；明確選取並儲存才更新該 ID。
 - **經濟界線**：目前許願仍只解鎖 Costume。沒有 Furniture 的存檔顯示空狀態，不自動送家具或擴充獎池；測試以隔離存檔透過既有 API 建立已擁有家具 fixture。新玩家的家具獲得 UX 留待後續設計。
 - **資源生命週期**：離開時停用並釋放房間、Camera、RenderTexture 與臨時材質，不更動既有 2D Scene 的物理物件；無昂貴反射、無大型素材下載。
 
 **驗證**：於相同 Unity 6000.3.23f1 與完整套件清單的隔離副本實際編譯及執行 Phase8ESmokeRunner。測試覆蓋進出、環境與角色建立、視角限制、按鈕操作、地板投影選點、未擁有／未知 ID 拒絕、未儲存預覽丟棄、position／rotation 儲存與新 InventoryManager 重載、可替換 prefab 呈現及 ownership 不重複。Phase 8E 及 Phase 5（含 8A、8B-1）、6、7、8C 回歸測試均通過，批次程序 exit code 皆為 0。測試使用獨立 PlayerPrefs key，未寫入正常玩家存檔；已檢視 3D 畫面截圖。批次 Editor 啟動仍有既存 SearchDatabase 的 ArgumentOutOfRangeException，須與功能測試結果區分；未進行實機手機或 Player Build 驗證。
 
-**仍未實作**：正式 3D Chicken／Penguin 美術、完整 Furniture library、完整 Touch UX、Costume 3D 穿戴、AI／LLM、Server Ownership Ledger、Blockchain／Smart Contract／Wallet、Santa Live Journey／Global Live Event、Multiplayer／Visit Friends、家具交易與 O2O 兌換。本階段不開始 Phase 8F。
+**仍未實作**：正式 3D Chicken／Penguin 美術、完整 Furniture library、完整 Touch UX、Costume 3D 穿戴、AI／LLM、Server Ownership Ledger、Blockchain／Smart Contract／Wallet、Santa Live Journey／Global Live Event、Multiplayer／Visit Friends、家具交易與 O2O 兌換。Phase 8F 的後續編輯器交付見第 8.8 節；本節保留 Phase 8E 當時紀錄。
 
 ---
 
+### 8.8 Phase 8F：3D Furniture Editor & Mobile Interaction Foundation（已完成）
+
+**Furniture Inventory 與編輯器**：My Nest 加入分頁家具庫，只顯示既有 Inventory 真正擁有的 Furniture 名稱及 Item Icon（無圖示時使用中性 placeholder）。卡片辨識「可擺放／預覽中／已擺放／待收回」，不新增 ownership 或家具獎池。點卡片或點 3D 家具可選取；支援擺放預覽、拖曳移動、旋轉、收回、Cancel、Confirm ✓ 與一次 Undo。綠色底座標示目前選取家具；現有 2D Gameplay／Costume 不變。
+
+**Preview → Confirm transaction**：FurnitureEditSession 持有 HomeNestData 的深拷貝與命令清單。選取新家具、移動、旋轉、收回和企鵝提案都只改預覽；切換家具保留同一 session 的整體方案，Cancel／離開丟棄所有未確認變更。只有玩家 Confirm 才呼叫 InventoryManager 的命令提交入口：比對預覽起始 Home State → 重新驗證全部命令 → Copy PlayerData → 一次 Commit，避免部分方案寫入。若家園已被其他操作改動，拒絕過期 Confirm；貨幣等無關更新不被覆蓋。原 Phase 8C TryPlaceHomeFurniture 保留舊程式／測試相容性，不作為玩家或 AI 編輯器入口。
+
+**Placement Command architecture**：可序列化 PlacementCommand 定義 PlaceFurniture、MoveFurniture、RotateFurniture、RemoveFurniture，以 itemId、position 與 yaw 表示操作。PlacementRules 同時用於玩家預覽、AI 提案與 Confirm。統一驗證有效且唯一的 catalog ID、Furniture 類型與 ownership、合法命令、有限數值、家園版本及家具數量上限；未知 ID／未擁有道具均拒絕。位置 clamp 至 x ±3、z ±2.5、y=0，rotation 限水平、scale 為單位大小。上限由 InventoryManager 的 homeFurnitureLimit 管理，預設 24 件，命令不能自行指定較寬鬆規則；每個 itemId 仍只有一筆配置。保留存檔中無法解析的 ID，不讓它們佔用畫面的有效家具名額。
+
+每批命令先在副本完整驗證，任一失敗都不改預覽或永久存檔；傳入資料及讀取快照均複製。一次 Undo 回復目前未確認 session 的上一個命令／提案批次；連續同家具 Move 合併，避免長拖曳累積超過 256 條命令上限，Undo 可退回該段移動前。Confirm／Cancel 清除 Undo，未提供永久存檔的歷史回復。
+
+**Penguin AI decoration preview interface**：企鵝入口顯示「🐧 歡迎回家！要我幫忙整理雞窩嗎？」；「企鵝方案」產生本地規則示範，將一件已擁有家具移至建議位置。這不是 LLM。未來流程為 Player Request → Penguin AI → Placement Commands → Validation → Preview → Player Confirm → HomeNestData。未來方案來源只取得 IHomeDecorationPreview（無 Confirm／Commit 方法）；玩家 UI 持有確認操作。AI 沒有特殊驗權模式，也不能繞過 InventoryManager 創造或扣除資產。
+
+**Mouse／Touch input foundation**：HomeNestPointerInput 以 EventSystem pointer ID 與視窗標準化座標處理輸入。點家具選取、單指拖家具移動、拖空白區 Orbit、雙指距離變化 Pinch Zoom；保留滑鼠拖曳、滾輪及視角／旋轉／Confirm／Cancel 按鈕。進入雙指操作後抑制家具拖曳，直到所有手指放開，避免 Pinch 誤移家具；關閉 UI 清除手勢狀態。Camera 沿用 Phase 8E 的距離、俯角與左右轉動限制，沒有接網路或第三方 Touch 套件。
+
+**驗證**：Phase8FSmokeRunner 使用隔離 PlayerPrefs key 及臨時 Furniture fixture，驗證 owned-only 家具庫、選取／預覽／移動／旋轉／收回、Cancel 不寫入、Confirm 單筆提交、Undo、Save／Reload、unknown ID 保留、ownership 拒絕、bounds、NaN／Infinity、數量上限、整批命令拒絕、AI 不自行 Commit、過期 session 拒絕，以及 300 次連續拖曳更新。已執行合成 pointer ID 的單指移動、空白拖曳及雙指 Pinch 測試，並檢視 Unity 畫面截圖。Phase 8E 的入口測試改為點擊家具庫卡片，以符合更新後 UI；其既有存檔、安全與 3D 功能回歸仍保留。已於 Unity 6000.3.23f1 完整套件隔離副本編譯並執行 Phase 8F、8E、5（含 8A／8B-1）、6、7、8C，全部 exit code 0；Editor 仍有既存 SearchDatabase 啟動例外，不屬於上述功能測試通過的宣稱。未做手機 Player Build 或實機測試。
+
+**需要實機驗證／仍未完成**：完整手機 Touch UX 與實機 multi-touch（含不同 DPI、手勢取消與系統中斷）、正式 3D 美術及完整家具素材庫、真正 LLM、Server Ledger、Blockchain／Wallet、Multiplayer／好友參觀、Santa Live Journey、家具交易。合成手勢通過不代表已完成手機實機測試；不開始 Phase 8G。
+
+---
 ## 9. Web2.5 Asset Ledger & AI Asset Operations Architecture
 
 **Phase 8D｜Architecture：已規劃。本次交付架構設計，不代表服務已上線。** 目標是在 100 萬以上玩家、每人數十至數百資產的規模下，安全管理 Costume、Furniture、Decoration、Butler、Exterior 及個人家園。保留現有金幣／羽毛經濟與本地系統；不選定任何鏈、不部署 Smart Contract、不建立錢包。

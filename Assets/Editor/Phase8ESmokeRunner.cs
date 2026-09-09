@@ -49,7 +49,7 @@ public static class Phase8ESmokeRunner
             home.Orbit(float.NaN); home.Zoom(float.NaN); Check(home.Yaw==-55 && home.Distance==14,"Nonfinite camera input");
             home.Orbit(55); home.Zoom(-3);
             Check(inventory.BuyItem(item),"Owned furniture fixture"); int owned=inventory.OwnedItemIds.Count,coins=inventory.Coins;
-            ui.transform.Find("NextFurniture").GetComponent<Button>().onClick.Invoke();
+            ui.transform.Find("FurnitureInventory/Furniture:"+item.itemId).GetComponent<Button>().onClick.Invoke();
             Check(home.Draft.itemId==item.itemId && home.GetFurniture(item.itemId)!=null,"Owned furniture selection");
             Check(home.MoveSelected(new Vector3(1.25f,0,-.75f)),"Move");
             ui.transform.Find("RotateFurniture").GetComponent<Button>().onClick.Invoke();

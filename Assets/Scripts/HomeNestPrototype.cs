@@ -8,7 +8,8 @@ namespace ChickenRush
     // Local preview/controller. Ownership and durable writes stay in InventoryManager.
     public sealed class HomeNestPrototype : MonoBehaviour
     {
-        [SerializeField, Min(1)] private int furnitureLimit = 24;
+        private FurnitureEditSession session;
+        private string selectedId;
         private InventoryManager inventory;
         private GameObject world;
         private Camera viewCamera;
@@ -16,15 +17,23 @@ namespace ChickenRush
         private RawImage viewport;
         private readonly List<Material> materials = new List<Material>();
         private readonly Dictionary<string, GameObject> furniture = new Dictionary<string, GameObject>();
-        private PlacedHomeItemData draft;
+        public IHomeDecorationPreview AgentPreview => new PreviewPort(this);
+        private sealed class PreviewPort : IHomeDecorationPreview
+        {
+            private readonly HomeNestPrototype home;
+            public PreviewPort(HomeNestPrototype owner) { home=owner; }
+            public bool Preview(IReadOnlyList<PlacementCommand> commands) => home.PreviewCommands(commands);
+        }
         private float yaw, distance = 11;
         public Camera ViewCamera => viewCamera;
         public GameObject World => world;
         public float Yaw => yaw;
         public float Distance => distance;
-        public int FurnitureLimit => Mathf.Max(1, furnitureLimit);
-        public PlacedHomeItemData Draft => draft?.Copy();
-        public bool HasUnsavedChanges { get; private set; }
+        public int FurnitureLimit => inventory.HomeFurnitureLimit;
+        public PlacedHomeItemData Draft => session?.Snapshot.placedFurniture.FirstOrDefault(x=>x.itemId==selectedId)?.Copy();
+        public bool HasUnsavedChanges => session != null && session.IsDirty;
+        public HomeNestData PreviewState => session?.Snapshot;
+        public bool IsFurnitureSaved(string id) => inventory.GetActiveHomeFurniture().Any(x=>x.itemId==id);
         public event System.Action Changed;
         private const int Layer = 30;
         public void Initialize(InventoryManager owner, RawImage image) { inventory = owner; viewport = image; }
@@ -55,19 +64,13 @@ namespace ChickenRush
             viewCamera = cameraObject.GetComponent<Camera>(); viewCamera.cullingMask = 1 << Layer;
             viewCamera.clearFlags = CameraClearFlags.SolidColor; viewCamera.backgroundColor = new Color(.08f,.15f,.2f);
             viewCamera.nearClipPlane = .1f; viewCamera.farClipPlane = 40; viewCamera.fieldOfView = 48;
-            target = new RenderTexture(1024,648,16); target.Create(); viewCamera.targetTexture = target;
+            target = new RenderTexture(1024,Mathf.Max(1,Mathf.RoundToInt(1024f*viewport.rectTransform.rect.height/Mathf.Max(1,viewport.rectTransform.rect.width))),16); target.Create(); viewCamera.targetTexture = target;
             viewport.texture = target; yaw = 0; distance = 11; UpdateCamera();
-            foreach (var saved in inventory.GetActiveHomeFurniture().Take(FurnitureLimit))
-            {
-                // Unsupported/out-of-room records remain in the save for recovery.
-                if (!InArea(saved)) continue;
-                var item = OwnedFurniture.FirstOrDefault(x => x.itemId == saved.itemId);
-                if (item != null) Show(item, saved);
-            }
+            session=new FurnitureEditSession(inventory); RefreshPreview();
         }
         public void Exit()
         {
-            draft = null; HasUnsavedChanges = false; furniture.Clear();
+            session = null; selectedId = null; furniture.Clear();
             if (viewport != null) viewport.texture = null;
             if (viewCamera != null) { viewCamera.enabled = false; viewCamera.targetTexture = null; }
             if (world != null) { world.SetActive(false); Destroy(world); } world = null; viewCamera = null;
@@ -87,57 +90,76 @@ namespace ChickenRush
         }
         public bool SelectFurniture(string itemId)
         {
-            if (world == null) return false;
-            var item = OwnedFurniture.FirstOrDefault(x => x.itemId == itemId);
-            if (item == null) return false;
-            var saved = inventory.GetActiveHomeFurniture();
-            if (!saved.Any(x => x.itemId == itemId) && saved.Count >= FurnitureLimit) return false;
-            // Switching selection discards the previous unsaved preview.
-            if (draft != null && furniture.TryGetValue(draft.itemId, out var old))
-            {
-                old.SetActive(false); Destroy(old); furniture.Remove(draft.itemId);
-                var original = saved.FirstOrDefault(x => x.itemId == draft.itemId);
-                var definition = OwnedFurniture.FirstOrDefault(x => x.itemId == draft.itemId);
-                if (original != null && definition != null && InArea(original)) Show(definition, original);
-            }
-            draft = saved.FirstOrDefault(x => x.itemId == itemId)?.Copy();
-            if (draft == null || !InArea(draft)) draft = new PlacedHomeItemData { itemId = itemId };
-            Show(item,draft); HasUnsavedChanges = !saved.Any(x => x.itemId == itemId && InArea(x)); Changed?.Invoke(); return true;
+            if(world==null || session==null || session.Snapshot.version!=HomeNestData.CurrentVersion || !inventory.IsOwnedFurniture(itemId)) return false;
+            var existing=session.Snapshot.placedFurniture.FirstOrDefault(x=>x.itemId==itemId);
+            if(existing==null && !session.Preview(new[]{new PlacementCommand { operation=PlacementOperation.PlaceFurniture,itemId=itemId }})) return false;
+            selectedId=itemId; RefreshPreview(); return true;
         }
-        public bool MoveSelected(Vector3 position)
+        public bool PreviewCommands(IReadOnlyList<PlacementCommand> commands)
         {
-            if (draft == null || !Finite(position.x) || !Finite(position.z)) return false;
-            draft.position = new Vector3(Mathf.Clamp(position.x,-3,3),0,Mathf.Clamp(position.z,-2.5f,2.5f));
-            ApplyDraft(); return true;
+            if(session==null || !session.Preview(commands)) return false;
+            RefreshPreview(); return true;
         }
+        public bool MoveSelected(Vector3 position) => Draft!=null && PreviewCommands(new[]{new PlacementCommand
+            { operation=PlacementOperation.MoveFurniture,itemId=selectedId,position=position }});
         public void RotateSelected(float degrees)
         {
-            if (draft == null || !Finite(degrees)) return;
-            draft.rotation = new Vector3(0,Mathf.Repeat(draft.rotation.y + degrees,360),0); ApplyDraft();
+            var draft=Draft;
+            if(draft!=null && Finite(degrees)) PreviewCommands(new[]{new PlacementCommand
+                { operation=PlacementOperation.RotateFurniture,itemId=selectedId,yaw=draft.rotation.y+degrees }});
         }
-        private void ApplyDraft()
-        {
-            if (furniture.TryGetValue(draft.itemId,out var obj)) Apply(obj,draft);
-            HasUnsavedChanges = true; Changed?.Invoke();
-        }
+        public bool RemoveSelected() => Draft!=null && PreviewCommands(new[]{new PlacementCommand
+            { operation=PlacementOperation.RemoveFurniture,itemId=selectedId }});
+        public void CancelEdit() { session?.Cancel(); RefreshPreview(); }
+        public bool UndoEdit() { if(session==null || !session.Undo()) return false; RefreshPreview(); return true; }
+        // Kept as the Phase 8E compatibility name; only the player's Confirm button invokes this.
         public bool SaveSelected()
         {
-            if (draft == null || !InArea(draft)) return false;
-            var active = inventory.GetActiveHomeFurniture();
-            if (!active.Any(x => x.itemId == draft.itemId) && active.Count >= FurnitureLimit) return false;
-            if (!inventory.TryPlaceHomeFurniture(draft.Copy())) return false;
-            HasUnsavedChanges = false; Changed?.Invoke(); return true;
+            if(session==null || !session.Confirm()) return false;
+            RefreshPreview(); return true;
+        }
+        private void RefreshPreview()
+        {
+            if(session==null || world==null) return;
+            foreach(var obj in furniture.Values) obj.SetActive(false);
+            foreach(var saved in session.Snapshot.placedFurniture.Where(x=>session.Snapshot.version==HomeNestData.CurrentVersion && InArea(x) && inventory.IsOwnedFurniture(x.itemId)).Take(FurnitureLimit))
+            {
+                var item=OwnedFurniture.FirstOrDefault(x=>x.itemId==saved.itemId);
+                if(item==null) continue;
+                Show(item,saved);
+                furniture[saved.itemId].transform.Find("SelectionMarker").gameObject.SetActive(saved.itemId==selectedId);
+            }
+            Changed?.Invoke();
+        }
+        public string PickFurniture(Vector2 uv)
+        {
+            if(viewCamera==null || !Finite(uv.x) || !Finite(uv.y)) return null;
+            var ray=viewCamera.ViewportPointToRay(uv); string picked=null; float nearest=float.MaxValue;
+            foreach(var entry in furniture)
+            {
+                if(!entry.Value.activeSelf) continue;
+                foreach(var renderer in entry.Value.GetComponentsInChildren<Renderer>())
+                                    {
+                    // Mesh-local bounds remain valid even before Unity updates world renderer bounds.
+                    var mesh=renderer.GetComponent<MeshFilter>();
+                    var bounds=mesh!=null && mesh.sharedMesh!=null ? mesh.sharedMesh.bounds : renderer.localBounds;
+                    var localRay=new Ray(renderer.transform.InverseTransformPoint(ray.origin),renderer.transform.InverseTransformVector(ray.direction));
+                    if(!bounds.IntersectRay(localRay,out float hit)) continue;
+                    float distance=Vector3.Distance(ray.origin,renderer.transform.TransformPoint(localRay.GetPoint(hit)));
+                    if(distance<nearest) { nearest=distance; picked=entry.Key; }
+                }
+            }
+            return picked;
         }
         public void PlaceAtViewport(Vector2 uv)
         {
-            if (viewCamera == null || uv.x < 0 || uv.x > 1 || uv.y < 0 || uv.y > 1) return;
+            if (viewCamera == null || !Finite(uv.x) || !Finite(uv.y) || uv.x < 0 || uv.x > 1 || uv.y < 0 || uv.y > 1) return;
             var ray = viewCamera.ViewportPointToRay(uv);
             if (new Plane(Vector3.up,world.transform.position).Raycast(ray,out float hit)) MoveSelected(ray.GetPoint(hit)-world.transform.position);
         }
-        public GameObject GetFurniture(string id) => furniture.TryGetValue(id,out var obj) ? obj : null;
+        public GameObject GetFurniture(string id) => id != null && furniture.TryGetValue(id,out var obj) && obj.activeSelf ? obj : null;
         private static bool Finite(float x) => !float.IsNaN(x) && !float.IsInfinity(x);
-        private static bool InArea(PlacedHomeItemData p) => p.IsValid && Mathf.Abs(p.position.x)<=3 && Mathf.Abs(p.position.z)<=2.5f &&
-            Mathf.Abs(p.position.y)<.01f && Mathf.Abs(p.rotation.x)<.01f && Mathf.Abs(p.rotation.z)<.01f && p.scale == Vector3.one;
+        private static bool InArea(PlacedHomeItemData p) => PlacementRules.InArea(p);
         private void Show(ItemDataSO item, PlacedHomeItemData data)
         {
             if (!furniture.TryGetValue(item.itemId,out var obj))
@@ -150,9 +172,10 @@ namespace ChickenRush
                     foreach (float x in new[]{-.45f,.45f}) foreach (float z in new[]{-.25f,.25f})
                         Part("Leg",obj.transform,new Vector3(x,.35f,z),new Vector3(.12f,.7f,.12f),new Color(.45f,.26f,.14f));
                 }
+                Part("SelectionMarker",obj.transform,new Vector3(0,.015f,0),new Vector3(1.35f,.02f,1.05f),new Color(.2f,.9f,.6f));
                 furniture.Add(item.itemId,obj);
             }
-            Apply(obj,data);
+            obj.SetActive(true); Apply(obj,data);
         }
         private static void Apply(GameObject obj, PlacedHomeItemData p)
         { obj.transform.localPosition=p.position; obj.transform.localEulerAngles=p.rotation; obj.transform.localScale=p.scale; }
