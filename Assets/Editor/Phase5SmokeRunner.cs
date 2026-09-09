@@ -62,6 +62,8 @@ public static class Phase5SmokeRunner
                 Check(ui != null && !ui.gameObject.activeSelf, "Wish UI must start closed");
                 menu.transform.Find("Menu/WishButton").GetComponent<Button>().onClick.Invoke();
                 Check(ui.gameObject.activeSelf, "Main menu entry");
+                Check(ui.transform.Find("PenguinButler") != null, "Penguin NPC missing");
+                VerifyPenguin();
                 Check(manager.CoinPrice == 100 && manager.FeatherPrice == 10, "Default prices");
                 Button("CoinsWishButton").onClick.Invoke(); stage = 1;
             }
@@ -69,6 +71,7 @@ public static class Phase5SmokeRunner
             {
                 Check(ui.LastResult == WishResult.InsufficientCurrency && inventory.Coins == 0 && inventory.OwnedItemIds.Count == 0, "Insufficient wish mutated inventory");
                 Check(ui.Message == "金幣不夠喔！", "Coin feedback");
+                Check(ui.Butler.Message == "再收集一些金幣，我會在這裡等你。", "NPC result integration");
                 Check(manager.Wish(WishCurrency.Feathers, out _) == WishResult.InsufficientCurrency && inventory.Feathers == 0, "Insufficient feathers");
                 inventory.AddCoins(100); inventory.AddFeathers(10);
                 inventory.OnCurrencyChanged += ObserveAtomic;
@@ -79,6 +82,7 @@ public static class Phase5SmokeRunner
             {
                 inventory.OnCurrencyChanged -= ObserveAtomic;
                 var reward = ui.DisplayedItem;
+                Check(ui.Butler.Message == "✨ 聽到了！你的願望實現啦！", "NPC success integration");
                 Check(ui.LastResult == WishResult.Success && reward != null && reward.itemType == ItemType.Costume, "Costume result");
                 Check(inventory.Feathers == 0 && inventory.Coins == 100 && inventory.OwnsItem(reward) && atomicObserved, "Feather atomic debit/unlock");
                 Check(!inventory.TryUnlockFromWish(reward, 100, 0) && inventory.Coins == 100, "Duplicate transaction debited");
@@ -94,20 +98,47 @@ public static class Phase5SmokeRunner
                 int balance = inventory.Coins;
                 Check(manager.Wish(WishCurrency.Coins, out var none) == WishResult.AllCollected && none == null && inventory.Coins == balance, "AllCollected must not charge");
                 manager.SetTheme(WishTheme.Santa); ui.Close(); ui.Open();
+                Check(ui.Butler.Message == "🎅 聖誕老公公正在準備禮物，我會幫你留意消息！", "NPC Santa integration");
                 Check(ui.transform.Find("Title").GetComponent<Text>().text.Contains("Santa"), "Santa UI theme");
                 Button("CoinsWishButton").onClick.Invoke(); stage = 3;
             }
             else if (stage == 3 && !ui.IsBusy)
             {
                 Check(ui.Message == "✨ 目前所有願望都實現了！", "All collected feedback");
+                Check(ui.Butler.Message == "你把目前所有願望都實現了！", "NPC all collected integration");
                 int coins = inventory.Coins; Button("CoinsWishButton").onClick.Invoke(); ui.Close(); ui.Open();
                 Check(!ui.IsBusy && inventory.Coins == coins && Button("CoinsWishButton").interactable, "Cancel waiting/reopen");
                 menu.gameObject.SetActive(false); Check(!ui.gameObject.activeSelf, "Close with menu");
                 Debug.Log("PHASE5_WISHING_WELL_SMOKE_PASS: UI, atomic currencies, duplicate/all collected, one-item catalog, reload, migration, theme, cancellation");
+                Debug.Log("PHASE8B1_PENGUIN_SMOKE_PASS: visible NPC, dialogue, interaction, themes, source replacement, unchanged assets");
                 SessionState.SetBool(Key, false); EditorApplication.Exit(0);
             }
         }
         catch (Exception ex) { Debug.LogException(ex); SessionState.SetBool(Key, false); EditorApplication.Exit(1); }
+    }
+    private sealed class TestMessages : IPenguinMessageSource
+    {
+        public string GetMessage(PenguinDialogueContext context) => "替換訊息來源";
+    }
+    static void VerifyPenguin()
+    {
+        var npc = ui.Butler;
+        Check(npc != null && npc.gameObject.activeInHierarchy, "NPC not visible with wishing well");
+        Check(npc.Message == "🐧 歡迎來到許願池！要不要許個願？", "NPC welcome");
+        string before = JsonUtility.ToJson(inventory.GetSnapshot());
+        string saved = PlayerPrefs.GetString(Key);
+        npc.TalkButton.onClick.Invoke();
+        Check(npc.Message.Contains("選擇金幣或羽毛"), "NPC interaction");
+        npc.Present(new PenguinDialogueContext(PenguinCue.Result, WishTheme.WishingWell, WishResult.InsufficientCurrency, WishCurrency.Feathers));
+        Check(npc.Message == "羽毛還差一點點喔！", "NPC feathers");
+        npc.Present(new PenguinDialogueContext(PenguinCue.Result, WishTheme.WishingWell, WishResult.InvalidConfiguration));
+        Check(npc.Message == "許願池暫時需要休息，請稍後再試。", "NPC invalid config");
+        foreach (WishResult result in Enum.GetValues(typeof(WishResult)))
+            npc.Present(new PenguinDialogueContext(PenguinCue.Result, WishTheme.Santa, result));
+        npc.SetMessageSource(new TestMessages()); Check(npc.Message == "替換訊息來源", "Message source extension");
+        npc.SetMessageSource(null);
+        Check(JsonUtility.ToJson(inventory.GetSnapshot()) == before && PlayerPrefs.GetString(Key) == saved, "NPC changed player assets");
+        npc.Present(new PenguinDialogueContext(PenguinCue.Welcome, WishTheme.WishingWell));
     }
     static void ObserveAtomic()
     {

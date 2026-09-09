@@ -25,3 +25,11 @@ Unity.exe -batchmode -projectPath <副本> -executeMethod Phase5SmokeRunner.Run 
 Run 會重建副本測試場景；RunDeliveredScene 可改為載入副本現有 SampleScene。測試使用獨立存檔 key，成功標記 PHASE5_WISHING_WELL_SMOKE_PASS，涵蓋雙幣原子交易、UI、重複／收集完成、存檔重讀與舊存檔 migration；金幣和羽毛使用獨立存檔，只有一個 Costume 也可驗證。
 
 Phase6SmokeRunner.Run、Phase7SmokeRunner.Run 保留回歸驗證。完整套件解析問題已在先前版本修正；Unity SearchDatabase 啟動索引例外仍是既有編輯器問題。
+
+## Phase 8B-1：企鵝管家
+
+許願池底部顯示企鵝 placeholder 與對話泡泡，點擊企鵝可取得引導。MainMenuCanvas 的 Penguin Portrait 可替換 Sprite；未指定時使用幾何企鵝，不依賴 emoji 字型作為角色外觀。
+
+台詞依歡迎、互動、等待、WishResult、WishCurrency 與 WishTheme 切換。結果播報優先於 Santa 主題歡迎，開關許願池會重置歡迎台詞。PenguinButlerAgent 不持有 InventoryManager；訊息來源 IPenguinMessageSource 僅接收不可變的呈現狀態。現在只使用本地規則式來源，不提供網路或 LLM。
+
+Phase5SmokeRunner.Run 同時輸出 PHASE8B1_PENGUIN_SMOKE_PASS，驗證 NPC 建立／可見、互動、結果、Santa 台詞、來源替換及資產不變。

@@ -16,11 +16,12 @@ namespace ChickenRush
         private ItemDataSO displayed;
         private bool busy;
         public bool IsBusy => busy;
+        public PenguinButlerAgent Butler { get; private set; }
         public ItemDataSO DisplayedItem => displayed;
         public WishResult LastResult { get; private set; }
         public string Message => message.text;
 
-        public void Initialize(InventoryManager owner, WishingWellManager wishing, Font font)
+        public void Initialize(InventoryManager owner, WishingWellManager wishing, Font font, Sprite butlerPortrait = null)
         {
             inventory = owner; manager = wishing;
             var canvas = gameObject.AddComponent<Canvas>(); canvas.overrideSorting = true; canvas.sortingOrder = 110;
@@ -28,15 +29,15 @@ namespace ChickenRush
             var rect = (RectTransform)transform;
             rect.anchorMin = Vector2.zero; rect.anchorMax = Vector2.one; rect.offsetMin = rect.offsetMax = Vector2.zero;
             gameObject.AddComponent<Image>().color = new Color(.045f, .09f, .14f);
-            title = RuntimeUI.Label("Title", transform, font, "", 38, new Vector2(650, 70), new Vector2(0, 355));
-            currency = RuntimeUI.Label("Currency", transform, font, "", 26, new Vector2(650, 55), new Vector2(0, 288));
-            RuntimeUI.Button("CloseButton", transform, font, "關閉", new Vector2(160, 55), new Vector2(0, -390)).onClick.AddListener(Close);
-            coins = RuntimeUI.Button("CoinsWishButton", transform, font, "", new Vector2(290, 65), new Vector2(-155, 204));
-            feathers = RuntimeUI.Button("FeathersWishButton", transform, font, "", new Vector2(290, 65), new Vector2(155, 204));
+            title = RuntimeUI.Label("Title", transform, font, "", 38, new Vector2(650, 70), new Vector2(0, 420));
+            currency = RuntimeUI.Label("Currency", transform, font, "", 26, new Vector2(650, 55), new Vector2(0, 355));
+            RuntimeUI.Button("CloseButton", transform, font, "關閉", new Vector2(160, 55), new Vector2(0, -425)).onClick.AddListener(Close);
+            coins = RuntimeUI.Button("CoinsWishButton", transform, font, "", new Vector2(290, 65), new Vector2(-155, 280));
+            feathers = RuntimeUI.Button("FeathersWishButton", transform, font, "", new Vector2(290, 65), new Vector2(155, 280));
             coins.onClick.AddListener(() => BeginWish(WishCurrency.Coins));
             feathers.onClick.AddListener(() => BeginWish(WishCurrency.Feathers));
-            message = RuntimeUI.Label("Message", transform, font, "", 26, new Vector2(660, 85), new Vector2(0, 112));
-            var panel = RuntimeUI.Rect("RevealPanel", transform, new Vector2(600, 345), new Vector2(0, -108));
+            message = RuntimeUI.Label("Message", transform, font, "", 26, new Vector2(660, 85), new Vector2(0, 202));
+            var panel = RuntimeUI.Rect("RevealPanel", transform, new Vector2(600, 345), new Vector2(0, -14));
             panel.gameObject.AddComponent<Image>().color = new Color(.09f, .18f, .24f);
             reveal = panel.gameObject.AddComponent<CanvasGroup>();
             icon = RuntimeUI.Rect("ItemIcon", panel, new Vector2(150, 150), new Vector2(0, 72)).gameObject.AddComponent<Image>();
@@ -44,12 +45,15 @@ namespace ChickenRush
             rewardName = RuntimeUI.Label("ItemName", panel, font, "", 26, new Vector2(570, 60), new Vector2(0, -34));
             equip = RuntimeUI.Button("EquipButton", panel, font, "裝備", new Vector2(230, 58), new Vector2(0, -111));
             equip.onClick.AddListener(() => { if (!busy && displayed != null) { inventory.EquipItem(displayed); Refresh(); } });
-            previous = RuntimeUI.Button("PreviousOwned", transform, font, "上一件", new Vector2(200, 50), new Vector2(-135, -326));
-            next = RuntimeUI.Button("NextOwned", transform, font, "下一件", new Vector2(200, 50), new Vector2(135, -326));
+            previous = RuntimeUI.Button("PreviousOwned", transform, font, "上一件", new Vector2(200, 50), new Vector2(-135, -222));
+            next = RuntimeUI.Button("NextOwned", transform, font, "下一件", new Vector2(200, 50), new Vector2(135, -222));
             previous.onClick.AddListener(() => Browse(-1)); next.onClick.AddListener(() => Browse(1));
+            var npc = RuntimeUI.Rect("PenguinButler", transform, new Vector2(660, 110), new Vector2(0, -322));
+            Butler = npc.gameObject.AddComponent<PenguinButlerAgent>();
+            Butler.Initialize(font, butlerPortrait);
             reveal.gameObject.SetActive(false);
         }
-        public void Open() { gameObject.SetActive(true); Refresh(); if (displayed == null) Browse(0); else Display(displayed); }
+        public void Open() { gameObject.SetActive(true); Butler.Present(new PenguinDialogueContext(PenguinCue.Welcome, manager.Theme)); Refresh(); if (displayed == null) Browse(0); else Display(displayed); }
         public void Close() { gameObject.SetActive(false); }
         private void OnEnable()
         {
@@ -102,8 +106,10 @@ namespace ChickenRush
         {
             reveal.gameObject.SetActive(false);
             message.text = manager.Theme == WishTheme.Santa ? "✨ 願望正在飛向 Santa…" : "✨ 願望正在飛向天空…";
+            Butler.Present(new PenguinDialogueContext(PenguinCue.Waiting, manager.Theme));
             yield return new WaitForSecondsRealtime(.65f);
             LastResult = manager.Wish(choice, out var reward);
+            Butler.Present(new PenguinDialogueContext(PenguinCue.Result, manager.Theme, LastResult, choice));
             if (LastResult == WishResult.Success)
             {
                 Display(reward); message.text = "🎁 願望實現：" + rewardName.text + "！";

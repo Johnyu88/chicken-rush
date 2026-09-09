@@ -1,0 +1,10 @@
+Phase 8B-1 verification
+Unity 6000.3.23f1; same full package manifest/lock in isolated project copy.
+RED: Phase5SmokeRunner.Run failed with Penguin NPC missing (exit 1).
+PASS: Phase5SmokeRunner.Run (exit 0), PHASE5_WISHING_WELL_SMOKE_PASS and PHASE8B1_PENGUIN_SMOKE_PASS.
+Checks: NPC created/visible, clickable guidance, welcome, coin/feather shortage, success, all collected, invalid configuration, Santa theme, message-source substitution, in-memory and persisted assets unchanged by NPC interaction.
+Inspected updated Phase5WishingWell.png (720x960): penguin placeholder and bubble do not overlap wish/reveal/equipment/close controls.
+NPC source contains no InventoryManager, WishingWellManager, PlayerPrefs or asset mutation calls.
+No LLM, external API, tracker, world map or Global Live Event implementation.
+Known UnityEditor.Search.SearchDatabase startup indexing exception remains; no failed gameplay assertions.
+PASS: Phase6SmokeRunner.Run and Phase7SmokeRunner.Run (exit 0); full package compilation and regressions.

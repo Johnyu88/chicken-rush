@@ -1,9 +1,9 @@
 # 🐣《小雞衝衝衝 (Chicken Rush)》遊戲設計與營運白皮書
-**Version:** 1.2.0 (Phase 8A Wishing Well; Santa Theme)
+**Version:** 1.3.0 (Phase 8B-1 Rule-Based Penguin NPC)
 **Engine:** Unity 6 (6000.3.23f1)  
 **Architecture:** Data-Driven (ScriptableObject) + Web2.5 Invisible Economy + AI-Led Operations
 
-> **文件狀態說明**：「已完成」以第 6 章 Phase 1～7 的交付紀錄為準；「已規劃」表示已納入設計，「未實作」表示尚無對應執行功能。本文經濟擴充、AI 營運與全球活動願景不代表已上線。Phase 8A 已將 Phase 5 玩家入口改為本地許願；全球活動與 AI 分析仍屬規劃。
+> **文件狀態說明**：「已完成」以第 6 章 Phase 1～7 的交付紀錄為準；「已規劃」表示已納入設計，「未實作」表示尚無對應執行功能。本文經濟擴充、AI 營運與全球活動願景不代表已上線。Phase 8A 已將 Phase 5 玩家入口改為本地許願；Phase 8B-1 已加入規則式企鵝 NPC。全球活動、真正 LLM 與 AI 分析仍屬規劃。
 
 ---
 
@@ -85,6 +85,14 @@
 
 **玩家許願 → 解鎖虛擬飾品 → 裝備率／使用率 → AI Agent 分析 → Meme 熱度 → O2O 實體周邊候選。** 本階段完成許願、解鎖與裝備；後續使用率分析、AI Agent、Meme 診斷與 O2O 仍為已規劃／未實作。沒有世界地圖、即時追蹤或全球領獎後端。
 
+#### Phase 8B-1：企鵝 AI 管家 NPC 基礎版（已完成）
+
+許願池顯示可點擊的企鵝管家與對話泡泡。現有管家資產僅是通用方塊，因此採可替換的幾何 placeholder；可在 MainMenuCanvas Inspector 的 Penguin Portrait 指定正式 Sprite，不下載新素材。
+
+PenguinButlerAgent 依歡迎、點擊互動、等待、金幣／羽毛不足、成功、全部收集與設定錯誤播報固定台詞；Santa Theme 顯示準備禮物的主題提示，不代表取得即時旅程資料。NPC 只接收不可變 PenguinDialogueContext，不持有資產管理器，不扣款、不解鎖、不決定抽獎結果，交易仍由 WishingWellManager／InventoryManager 負責。
+
+IPenguinMessageSource 保留可替換訊息來源介面，預設 RuleBasedPenguinMessages。基礎 NPC 互動已實作；真正 LLM、外部 API、Phase 8B-2、Santa Live Journey 與 Global Live Event 均為已規劃／未實作，本階段沒有網路服務。
+
 ### 4.4 Santa Live Journey & Global Wishing Event（聖誕老人全球送禮與即時許願活動）
 
 **狀態：已規劃／未實作。** 本設計是 **Wishing Well & Santa Event System** 的擴充與統一定位；許願井、Santa 旅程、禮物開箱共用同一活動核心，不建立第二套活動經濟。
@@ -99,7 +107,7 @@
 
 #### 🐧 企鵝管家：玩家可見的 AI Agent / NPC
 
-企鵝管家正式定位為玩家看得到、可以互動的 **Penguin AI Agent / NPC**，同時是活動入口與引導者，負責：
+企鵝管家正式定位為玩家看得到、可以互動的 **Penguin AI Agent / NPC**。Phase 8B-1 已完成本地規則式互動；以下全球活動職責仍為規劃，未實作：
 
 - Santa 目前送禮區域與資料來源播報。
 - 下一站、預計抵達時間與抵達提醒。
@@ -145,11 +153,11 @@
 
 ## 5. AI Agent 自動化營運與安全護欄 (AI Operations)
 
-### 5.1 玩家端與幕後 AI Agent 分工（已規劃／未實作）
+### 5.1 玩家端與幕後 AI Agent 分工（基礎 NPC 已實作，其餘規劃）
 
 | Agent | 定位與責任 |
 | :--- | :--- |
-| 🐧 Penguin AI Agent | 玩家可見、可互動的企鵝管家 NPC；提供第 4.4 節的活動入口、位置播報、到站提醒、許願引導、禮物通知與活動說明。 |
+| 🐧 Penguin AI Agent | 已實作本地規則式企鵝管家 NPC、點擊互動及許願播報；真正 LLM 與第 4.4 節位置播報、到站提醒、全球禮物通知等仍未實作。 |
 | 🎨 Trends & Asset Agent | 幕後分析許願率、開箱率、裝備率及活動參與度；結合全球社群熱點，將流行符號抽象化，提出 ItemDataSO 規格、提示詞與 2D／3D 資產概念。 |
 | 📢 Marketing Agent | 依熱門活動、道具與迷因產生短影音腳本及社群內容，可延用企鵝管家第一人稱；依第 5.3 節經人類批准後發布。 |
 | 🛡️ Auditor Agent | 維持第 5.2 節既有安全與合規審查，檢查活動台詞、資產及行銷提案，並檢查模擬旅程與示意統計是否如實標示。 |
@@ -203,9 +211,10 @@ Trends & Asset Agent 結合漏斗轉換、持續裝備、回訪與互動品質�
 | Phase 8A：本地 Wishing Well & Santa 共用核心／UI Theme | 見第 4.3 節 | 已完成 |
 | Santa Live Journey & Global Wishing Event | 已規劃，見第 4.4～4.5 節 | 未實作 |
 | Global Live Event Framework 與季節換皮 | 已規劃，見第 4.5 節 | 未實作 |
-| 企鵝 AI Agent / NPC、幕後 AI 營運及 O2O 需求診斷 | 已規劃，見第 5 章 | 未實作 |
+| Phase 8B-1：企鵝 NPC 基礎互動與規則式台詞 | 見第 4.3 節；Smoke Test 通過 | 已完成 |
+| 真正 LLM／Phase 8B-2、幕後 AI 營運及 O2O 需求診斷 | 已規劃，見第 5 章 | 未實作 |
 
-本次 Phase 8A 交付本地許願交易與 UI Theme；Santa Live Journey／Global Live Event 為已規劃／未實作，不包含世界地圖、Santa Tracker 介接、全球後端或 AI Agent 執行服務。未新增貨幣系統。
+Phase 8A 交付本地許願交易與 UI Theme；本次 Phase 8B-1 補上規則式企鵝 NPC 與訊息來源介面。Santa Live Journey／Global Live Event 為已規劃／未實作，不包含世界地圖、Santa Tracker 介接、全球後端或 AI Agent 執行服務。未新增貨幣系統。
 
 ---
 

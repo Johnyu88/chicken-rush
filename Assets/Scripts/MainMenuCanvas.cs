@@ -13,6 +13,7 @@ namespace ChickenRush
     {
         [SerializeField] private GameDifficultyManager difficultyManager;
         [SerializeField] private Font chineseFont;
+        [SerializeField] private Sprite penguinPortrait;
         private Font runtimeFont;
         [SerializeField] private InventoryManager inventoryManager;
         private Text coinsLabel;
@@ -77,7 +78,7 @@ namespace ChickenRush
             var wishManager = GetComponent<WishingWellManager>();
             if (wishManager == null) wishManager = gameObject.AddComponent<WishingWellManager>();
             wishManager.Initialize(inventoryManager);
-            wishingWell.Initialize(inventoryManager, wishManager, runtimeFont);
+            wishingWell.Initialize(inventoryManager, wishManager, runtimeFont, penguinPortrait);
             wishingWellButton.onClick.AddListener(wishingWell.Open);
             Label("Hint", panel, "按住螢幕落雞 · 左右拖動調整方向", 23,
                 new Vector2(0, -382), new Vector2(600, 55), new Color(0.7f, 0.8f, 0.87f));
