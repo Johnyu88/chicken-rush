@@ -1,5 +1,5 @@
 # 🐣《小雞衝衝衝 (Chicken Rush)》遊戲設計與營運白皮書
-**Version:** 1.5.0 (Phase 8C My Nest Foundation)
+**Version:** 1.6.0 (Phase 8D Asset Ledger Architecture; Design Only)
 **Engine:** Unity 6 (6000.3.23f1)  
 **Architecture:** Data-Driven (ScriptableObject) + Web2.5 Invisible Economy + AI-Led Operations
 
@@ -56,7 +56,7 @@
 
 ## 4. 虛擬資產與 Web2.5 無感經濟 (Asset & Economy)
 
-採用 `ScriptableObject` (`ItemDataSO`) 模組化設計，支援無縫擴充與鏈上轉化：
+採用 `ScriptableObject` (`ItemDataSO`) 模組化設計；未來鏈上證明是可選擴充，不是現有功能或遊戲運作前提（見第 9 章）：
 
 ### 4.1 現有四類資料與規劃用途
 現有 ItemType 為 Title、Costume、Furniture、Butler；分類存在不代表下列所有用途均已實作。家園擺放、離線收益與安撫技能仍為規劃。Exterior／Decoration 的未來擴充分工見第 8.3 節。
@@ -68,13 +68,13 @@
    * 離線自動收租金幣。
    * **安撫技能**：變態難度中可手動/被動釋放「安撫笛聲」，將生氣暴走小雞還原為平靜狀態。
 
-### 4.2 Web2.5 無感鏈化與注意力轉化 (Invisible Web3)
+### 4.2 Web2.5 無感體驗與可選資產證明（已規劃／未實作）
 1. **零門檻進入 (Zero-Friction Onboarding)**：
-   * 採用社交登入 (Social Login) 與 AI 託管錢包，玩家全程無須接觸私鑰、助記詞與 Gas Fee。
+   * 以低門檻登入與無需理解區塊鏈的遊戲體驗為方向。帳號／錢包方案尚未選定或實作；AI 不持有簽署權限，核心玩法不要求錢包或鏈上操作。
 2. **注意力實質化 (Attention Monetization)**：
-   * 玩家投入的時間、5 秒廣告觀看與高難度通關行為，由 AI 自動計算貢獻度並轉化為具備可交換價值的「實質資產/羽毛」。
+   * 玩家投入的時間、廣告與通關行為可作為未來分析訊號；獎勵只能由經批准的規則與 Asset Operations Service 驗證發放。AI 分析不自動創造可交換資產，不改變現有金幣／羽毛規則或承諾其可兌換價值。
 3. **意圖導向 P2P 轉贈 (Intent-Based Management)**：
-   * 玩家無須操作複雜的交易市場，只需向「AI 管家」下達自然語言指令（如：「幫我把重複的家具贈送給好友」），由 AI Agent 全自動完成資產的打包與轉贈。
+   * 玩家可向企鵝 AI 管家提出轉贈意圖，由服務查詢可轉贈資產並產生提案；確認資產、收件對象與條件後，才由服務驗權及執行。AI 不直接扣資產、改 ownership 或簽署交易（見第 9.4 節）。目前去重所有權不代表已有多件重複收藏或轉贈功能。
 
 
 ### 4.3 Wishing Well & Santa Event System（Phase 8A）
@@ -174,7 +174,7 @@ IPenguinMessageSource 保留可替換訊息來源介面，預設 RuleBasedPengui
 
 ### 5.3 人類一鍵拍板介面 (Human-in-the-Loop)
 * **決策形式**：AI 將整合好的「資產 Preview + 廣告文案 + 合規檢查報告」直接發送至開發者的 **Telegram / Discord 頻道**。
-* **操作流程**：開發者只需點擊 `[👍 一鍵批准上架]` 或 `[👎 退回銷毀]`，AI 隨即透過 Addressables 雲端熱更新推送到遊戲，實現極低負擔的全球化營運。
+* **操作流程**：開發者只需點擊 `[👍 一鍵批准上架]` 或 `[👎 退回銷毀]`，經授權的發布服務再透過規劃中的 Addressables 雲端熱更新推送到遊戲，實現極低負擔的全球化營運。
 
 
 ### 5.4 O2O 實體周邊與迷因受歡迎程度診斷（已規劃／未實作）
@@ -228,8 +228,9 @@ AI Agent 結合以上訊號判斷哪些虛擬造型值得轉成**實體玩具、
 | 真正 LLM／Phase 8B-2、幕後 AI 營運及 O2O 需求診斷 | 已規劃，見第 5 章 | 未實作 |
 | Phase 8C My Nest Foundation：入口、資料模型、存檔與共用參照骨架 | 見第 8 章；Smoke Test 通過 | 已完成 |
 | 真正 3D Home Nest、3D Furniture Placement UI、3D Models | 已規劃，見第 8 章 | 未實作 |
+| Phase 8D Asset Ledger & AI Asset Operations Architecture | 已規劃，設計文件見第 9 章 | Server Ledger／AI Service／Adapter／Contract／Wallet／Redeem Ledger 未實作 |
 
-Phase 8A 交付本地許願交易與 UI Theme；Phase 8B-1 已補上規則式企鵝 NPC 與訊息來源介面。本次 Phase 8C 完成 My Nest 入口、個人家園資料及本地存檔骨架。Santa Live Journey／Global Live Event 為已規劃／未實作，不包含世界地圖、Santa Tracker 介接、全球後端或 AI Agent 執行服務。未新增貨幣系統。
+Phase 8A 交付本地許願交易與 UI Theme；Phase 8B-1 已補上規則式企鵝 NPC 與訊息來源介面。Phase 8C 已完成 My Nest 入口、個人家園資料及本地存檔骨架；本次 Phase 8D 僅交付第 9 章架構設計。Santa Live Journey／Global Live Event 為已規劃／未實作，不包含世界地圖、Santa Tracker 介接、全球後端或 AI Agent 執行服務。未新增貨幣系統。
 
 ---
 
@@ -267,7 +268,7 @@ Phase 8A 交付本地許願交易與 UI Theme；Phase 8B-1 已補上規則式企
 | 3D Model／Mesh Representation | 在家園小雞模型上呈現同一頂帽子。 |
 | Icon／Preview Representation | 許願揭曉、背包與預覽展示。 |
 
-共同 Item ID 是所有權依據，2D 穿戴、3D 顯示與圖示都是該資產的不同表現，不要求重複解鎖。家園擺放位置／旋轉等配置資料與 ownership 分開保存；配置引用同一 ID，不另發一份資產。缺少 3D Representation 時保留既有所有權及 2D 使用能力，在家園標示尚不支援，不因未有模型而扣款或重新許願。
+目前本地以 Item ID 記錄持有種類；未來 AssetInstance／ownerId 是實例所有權依據，itemId 仍指向共同定義（見第 9.2 節）。2D 穿戴、3D 顯示與圖示都是該資產的不同表現，不要求重複解鎖。家園擺放位置／旋轉等配置資料與 ownership 分開保存；配置引用同一 ID，不另發一份資產。缺少 3D Representation 時保留既有所有權及 2D 使用能力，在家園標示尚不支援，不因未有模型而扣款或重新許願。
 
 目前 ItemDataSO 保留 icon 與 Costume Sprite／Overlay，Phase 8C 新增可為空的 model3DPrefab 參照；尚無模型不影響有效性或所有權。本地家園配置存檔骨架已完成；真正 3D 模型、呈現及擺放 UI 仍未實作，ItemType 未擴充。
 
@@ -304,7 +305,7 @@ Phase 8A 交付本地許願交易與 UI Theme；Phase 8B-1 已補上規則式企
 | 3D Models | **未實作**。 |
 | Phase 8C My Nest Foundation | **已完成**；入口、摘要、資料與存檔安全測試通過。 |
 
-本次 Phase 8C 未新增 Scene、3D 模型、家具拖曳或素材。真正 3D Home Nest、3D Furniture Placement UI、Santa Live Journey、Global Live Event、LLM 與雲端帳號仍未實作。
+Phase 8C 未新增 Scene、3D 模型、家具拖曳或素材。真正 3D Home Nest、3D Furniture Placement UI、Santa Live Journey、Global Live Event、LLM 與雲端帳號仍未實作。
 
 ### 8.6 Phase 8C：My Nest Foundation（已完成）
 
@@ -317,3 +318,113 @@ InventoryManager.TryPlaceHomeFurniture 驗證現有資產為已擁有 Furniture�
 載入時保留無法解析的 ID 與未來 Exterior／Decoration 資料，以便恢復；GetActiveHomeFurniture／GetActiveHomeButler 僅回傳仍可解析且具所有權的有效配置，不讓未知或未擁有資產生效。回傳資料為深拷貝，不可藉修改快照繞過交易。未支援的家園版本不允許新增配置。Exterior／Decoration 欄位僅預留，未加入 ItemType 或操作功能。
 
 驗證涵蓋舊存檔 migration、UI 開關、家園存檔重讀、未知 ID 恢復保留、未擁有／錯誤類型／非法 Transform 拒絕，以及同一資產 2D／3D 參照不重複所有權。
+
+---
+
+## 9. Web2.5 Asset Ledger & AI Asset Operations Architecture
+
+**Phase 8D｜Architecture：已規劃。本次交付架構設計，不代表服務已上線。** 目標是在 100 萬以上玩家、每人數十至數百資產的規模下，安全管理 Costume、Furniture、Decoration、Butler、Exterior 及個人家園。保留現有金幣／羽毛經濟與本地系統；不選定任何鏈、不部署 Smart Contract、不建立錢包。
+
+### 9.1 三層資料架構
+
+| 資料層 | 回答的問題 | 規劃資料與邊界 |
+| :--- | :--- | :--- |
+| **A. Asset Registry** | 這是什麼資產？ | 以 itemId 定義 ItemDefinition；包含 asset type、rarity、2D representation、3D representation、Icon／Preview、transferable、blockchainEligible、O2O redeemable 等 metadata。定義及政策可版本化，不包含玩家持有清單。 |
+| **B. Ownership Ledger** | 誰擁有什麼？ | 每個 AssetInstance 對應唯一 assetInstanceId、itemId、ownerId，預留 acquiredAt、source、transferState、chainProof 與版本。是未來遊戲服務唯一的 ownership truth；2D／3D 不各存一份所有權。 |
+| **C. Runtime / Home State** | 資產現在怎麼被使用？ | 記錄 Costume 穿戴對象、Furniture 所在家園及 position／rotation／scale、active Butler、Exterior、Decoration。配置引用資產，不能反向創造所有權；高頻資料原則上鏈下保存。 |
+
+Registry 的政策旗標是可用條件，不是發放證據：blockchainEligible 不等於已鑄造，redeemable 不等於已兌換，transferable 也不等於玩家已同意轉移。未知定義或缺少 Representation 不應讓整份玩家資料失效，保留待恢復參照並禁止不合法使用。
+
+### 9.2 ItemDefinition、AssetInstance、Representation、RuntimeState
+
+| 概念 | 聖誕帽範例 | 不可混淆的責任 |
+| :--- | :--- | :--- |
+| **ItemDefinition** | costume.santa_hat：聖誕帽這種東西是什麼。 | 種類與規則，沿用 ItemDataSO／itemId 的定義角色。 |
+| **AssetInstance** | instance-001：某玩家實際擁有的那一件。 | 實例識別、ownerId、取得來源、轉移／兌換狀態；不是 Sprite 或模型。 |
+| **Representation** | 同一帽子的 Sprite、Mesh、Icon。 | 不因新增 3D 外觀而產生第二件資產或第二份 ownership。 |
+| **RuntimeState** | instance-001 現在戴在哪隻雞上。 | 可變使用配置；家具則記錄擺在哪個家園及 Transform。 |
+
+以上四個概念分開建模，對應第 9.1 節三個資料層：Definition／Representation 屬 Registry，Instance 屬 Ledger，使用配置屬 Runtime／Home State。未來若允許同款多件，各件具有不同 assetInstanceId；是否允許多件仍由產品規則決定，本階段不改變許願去重及每 itemId 一份本地 ownership 的行為。
+
+未來每份個人家園以 account/player ID 對應 Home State；家園配置不是可轉贈商品本身。若日後某種家園外觀或兌換權被定義為資產，仍透過 Registry／Ledger 表達，不因存在一份 Home State 自動鑄造資產。
+
+### 9.3 Hybrid Asset Ledger：Blockchain ≠ 遊戲資料庫
+
+**Blockchain ≠ 遊戲資料庫。** 移動家具、旋轉家具、換帽子、NPC 移動與普通遊戲操作保存於鏈下 Runtime／Home State，不逐次上鏈，也不要求每次遊玩等待鏈上結算。
+
+只有需要可驗證所有權、稀缺性或轉移證明的高價值事件，才評估使用區塊鏈：限定稀有資產、玩家間可轉贈資產、特殊活動收藏品、O2O 實體兌換權，以及未來需公開驗證的 ownership proof。這些都是候選用途，不表示必須上鏈。
+
+Server Ownership Ledger 是遊戲查詢與授權的單一真相；本地快取及 chainProof 皆非可各自改寫所有權的第二套帳本。chainProof 僅連結已核驗的外部證明，包含必要的交易／證明識別、驗證狀態及時間。若未來接受外部鏈上轉移，須由受控對帳流程驗證並更新同一 Ledger，不能信任客戶端自報持有人。
+
+需鏈上證明的操作可採 proposed → reserved／pending → confirmed 或 failed 狀態。服務先驗權、保留資產並寫入待處理事件，再非同步提交；pending 期間禁止同一實例再次轉移或兌換。確認後才完成相應權利變動，失敗以可審計的補償／解除保留處理，不先在本地複製另一份資產。重複回呼、超時或證明衝突須去重與重新查證；遇到可能的結算回退，暫停該實例的高價值操作並對帳，不以快取覆蓋權威狀態。
+
+### 9.4 AI Asset Operations Layer
+
+**Penguin AI Agent → Intent / Query → Asset Operations Service → Permission / Rule Validation → Ownership Ledger / Home State → 必要時 Blockchain Adapter。**
+
+AI 可查詢玩家資產、找長期未使用家具、推薦雞窩配置、辨識重複／相似收藏、提出轉贈建議、整理節慶裝飾、解釋取得來源及分析熱門 Costume／Furniture。現有去重資產庫只能辨識相似或不同收藏；真正重複實例需未來產品規則支援。
+
+AI 只產生結構化 Intent 或執行受限 Query，不能直接存取資料庫憑證或簽署金鑰。Asset Operations Service 根據已驗證登入身分檢查 ownerId、權限、定義政策、當前持有狀態、轉移／兌換鎖定與預期版本；AI 輸入的 playerId 不具授權效力。服務拒絕越權、失效版本及不合法數量，不能因模型聲稱玩家同意而放行。
+
+建議與執行分離：先提供可檢視的配置或轉贈提案，再由玩家授權相應修改。高價值轉移必須明確確認實例、對象與條件，確認綁定操作內容且有期限；執行前再次驗證。AI **不得繞過權限、直接創造 ownership、直接扣資產或直接簽署鏈上交易**。任何未來簽署能力位於獨立受控流程，現階段不選定錢包或金鑰管理方案。
+
+### 9.5 百萬玩家規模與有限查詢
+
+容量規劃以「100 萬以上玩家 × 每人數十至數百資產」為目標，資料庫實作與供應商尚未選定。設計要求：
+
+- **account/player ID 與 asset instance ID**：穩定、不依賴顯示名稱；Ledger 對 assetInstanceId 唯一約束，每件資產只有一個有效持有人。
+- **Indexed ownership lookup**：以 ownerId 加狀態／分類等索引支援篩選；Registry 可共用快取，Ownership 查詢依帳號隔離，避免掃描所有玩家庫存。需要時按 player ID 分區；跨玩家轉移仍須受控協調與原子提交。
+- **Event／audit log**：每次 ownership 變更記錄 actor、operation ID、來源、對象、前後版本、原因與時間；歷史不可由 AI 任意刪改。發放、移轉、保留、補償與兌換皆可追溯。
+- **Idempotent transaction**：操作綁定唯一 key 與請求內容；同 key 同內容回傳既有結果，不重扣／重發；同 key 不同內容拒絕。狀態變更與 audit／待送出事件在同一資料庫交易保存，避免資料成功但訊息遺失。
+- **Optimistic concurrency／versioning**：更新 Ledger 實例或 Home State 時帶 expectedVersion，比對成功才提交；衝突重新讀取並確認意圖，不讓過期配置覆蓋新狀態。驗權與寫入不可分離成可被競態繞過的步驟。
+- **Cache 與 pagination**：按版本失效或更新快取，權限及交易決策回查權威狀態；游標分頁、固定回傳上限、查詢配額。分析使用彙總／讀取模型，避免阻塞玩家交易。
+- **Asynchronous blockchain settlement**：可靠佇列／outbox、去重消費、重試與對帳；回傳 operation ID 和 pending 狀態，而非長時間阻塞一般遊戲操作。轉移完成後，使舊持有人的裝備／家園引用失效或停用，Runtime 仍須檢查有效所有權。
+
+AI 不載入玩家完整資產庫，只透過授權工具取得當前任務所需欄位，例如下列**未實作的查詢契約**：
+
+| 查詢 | 最小回傳範圍 |
+| :--- | :--- |
+| GetOwnedAssets(playerId, filters, cursor) | 符合條件的有限筆資產摘要、版本與下一頁 cursor。 |
+| GetHomeState(playerId) | 家園版本與所需配置摘要；大型布局依區域或選定物件分頁取得，避免完整塞入 context。 |
+| GetAssetHistory(assetInstanceId) | 有權查看的來源／異動摘要；長歷史以後續游標或限定期間取得。 |
+
+查詢工具在服務端驗權，對結果刪除不必要欄位；推薦長期未用家具應由服務先篩選候選，不把整個帳號或其他玩家資料交給模型。
+
+### 9.6 可替換的 Blockchain Adapter
+
+**IBlockchainAssetAdapter：僅設計名稱與邊界，未實作介面或服務。** 未來隔離「提交符合條件的證明／轉移操作、查詢結算狀態、核驗證明」等能力，讓不同鏈可替換。Adapter 不決定遊戲獎勵或授權；它只接受已通過服務驗證的操作，回傳結算狀態／證明，不直接繞過 Ledger 更新玩家資產。
+
+本階段不選定 Polygon／Base／Solana 或其他鏈，不部署 Smart Contract、不建立玩家錢包。**沒有區塊鏈時，Chicken Rush 核心遊戲仍能完整運作。** Adapter 未配置或不可用時，本地玩法、許願、穿戴與家園基礎功能照常運作；需外部證明的可選功能顯示不可用／待處理，不偽造成功或阻擋普通遊戲。
+
+### 9.7 O2O Redeemable Asset 與防重複兌換
+
+**熱門虛擬商品 → AI 分析 → 人類批准 → O2O 商品 → Redeemable Asset → 玩家兌換 → Audit Log。**
+
+實體周邊兌換權可定義為特殊 AssetInstance，連結商品與適用條件；它不是第二種貨幣，也不表示所有普通飾品都可兌換。若由收藏品衍生權利，規則須明確界定唯一權利來源，不讓原件與衍生權同時重複履約。
+
+O2O Redeem Ledger 與同一 Ownership Ledger 關聯：驗證 owner、權利有效性及未使用狀態，以 assetInstanceId 的唯一兌換約束與 idempotency key 讓 available → reserved → redeemed 的每次狀態轉移在單筆交易記錄並保存 audit。重試回傳原兌換／履約識別，不能再次出貨；reserved／redeemed 權利不可轉贈。失敗取消須先確認尚未履約，再記錄補償，不能因網路超時直接恢復可用。
+
+實際出貨可非同步，使用同一履約識別防重複；兌換與出貨狀態分開保存。地址等履約資料限授權服務使用並鏈下保存，不交給不需要它的 AI，也不公開上鏈。鏈上證明為可選，防重複兌換的服務端規則不能依賴 AI 或單次客戶端提示。
+
+### 9.8 隱私、安全與現有系統相容性
+
+AI 採最小資料存取；私人玩家資料不公開上鏈，鏈上內容避免直接含姓名、email、地址或內部帳號識別。公開證明使用必要的非直接識別資訊，帳號對應鏈下受控保存；不將去識別化等同無法被關聯。所有 ownership 變動必須有 audit trail，高價值轉移需明確玩家確認，AI 建議與實際交易執行保持分離。
+
+Phase 8C 的 InventoryManager、HomeNestData、PlacedHomeItemData、ItemDataSO 保持可用，本次不更動 Runtime、存檔 schema、許願費用或獎池。未來 Server Ledger 導入須使用版本化遷移、備份與可重試的映射，為經驗證的本地持有紀錄建立實例，並保存 local itemId 到 assetInstanceId 的對應；不能把客戶端 PlayerPrefs 宣告直接當作高價值所有權證明。
+
+切換至 Server Ledger 後，本地 Inventory 是服務端資料的快取／離線使用投影，不能與服務端並列為兩個可獨立發放的真相。離線取得／同步策略須在該階段另行定義並防重複匯入；目前仍維持既有本地存檔模式，不提前建立帳號或實例遷移程式。
+
+### 9.9 Phase 8D 狀態
+
+| 範圍 | 狀態 |
+| :--- | :--- |
+| Web2.5 Asset Ledger & AI Asset Operations Architecture | **已規劃**；設計文件交付。 |
+| Local Inventory／HomeNest foundation | **已完成**；沿用 Phase 8C。 |
+| Server Ownership Ledger | **未實作**。 |
+| AI Asset Operations Service | **未實作**。 |
+| Blockchain Adapter | **未實作**。 |
+| Smart Contract | **未實作**。 |
+| Wallet | **未實作**。 |
+| O2O Redeem Ledger | **未實作**。 |
+
+本階段僅修改 WHITEPAPER.md。真正 3D 家園、LLM、Santa Live Journey／Global Live Event 仍依前述規劃，未因本架構設計而上線。未改變遊戲經濟，未開始任何區塊鏈實作。
