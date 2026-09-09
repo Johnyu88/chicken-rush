@@ -236,6 +236,17 @@ Phase 8A 交付本地許願交易與 UI Theme；Phase 8B-1 已補上規則式企
 
 ---
 
+### 6.2 Development Checkpoint / 交接儲存點
+
+- Phase 8F：完成；功能交付 commit：`31e7ee4f3c64843a2c16c4d4167faa6dbbcc58bf`，已確認推送至 origin/main。
+- Phase 8G：尚未開始。
+- 下一階段：**2D ↔ 3D Shared Costume / Appearance**。
+- 手機 multi-touch：待實機驗證。
+- LLM / Server Ledger / Blockchain / Santa Live Journey：未實作。
+
+此儲存點僅記錄交接狀態，不開始任何新功能開發。
+
+---
 ## 7. 專案核心願景 (Core Vision)
 
 * **玩家端的極致減法**：保持 100% 的 Hyper-Casual 純粹樂趣——無門檻、極速上手、Q 彈解壓、隨玩隨關。不讓任何複雜的機制（如交易、錢包、任務系統）干擾玩家體驗。
